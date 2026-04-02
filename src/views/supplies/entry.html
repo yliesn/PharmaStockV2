@@ -75,6 +75,9 @@
       background-color: #d4edda;
       border-left: 4px solid #198754;
     }
+    .hidden-section {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -96,7 +99,7 @@
           <ul class="dropdown-menu" aria-labelledby="stockDropdown">
             <li><a class="dropdown-item" href="list.html">Consulter stock</a></li>
             <li><a class="dropdown-item" href="list.html" onclick="openCreateModal()">Ajouter produit</a></li>
-            <li><a class="dropdown-item" href="#">Ajuster stock</a></li>
+            
           </ul>
         </li>
 
@@ -144,8 +147,6 @@
 </nav>
 
 <div class="container-fluid mt-5">
-  <div id="alert" class="alert alert-danger d-none"></div>
-  <div id="successMessage" class="success-message"></div>
 
   <!-- En-tête -->
   <div class="row mb-4">
@@ -162,9 +163,28 @@
     </div>
   </div>
 
+  <!-- Sélection de la fourniture -->
+  <div id="selectSupplyContainer" class="row mb-4 hidden-section">
+    <div class="col-lg-6 mx-auto">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title fw-bold mb-4">
+            <i class="fas fa-box"></i> Sélectionner une fourniture
+          </h5>
+          <div class="form-group">
+            <label for="supplySelect" class="form-label">Fourniture <span class="text-danger">*</span></label>
+            <select class="form-select form-select-lg" id="supplySelect" onchange="onSupplyChange()">
+              <option value="">-- Choisir une fourniture --</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Carte du produit -->
-  <div class="row mb-4">
-    <div class="col-lg-8">
+  <div id="productDetailsContainer" class="row mb-4 hidden-section">
+    <div class="col-lg-6 mx-auto">
       <div class="card supply-card shadow-sm">
         <div class="card-body">
           <div class="supply-info">
@@ -191,8 +211,8 @@
   </div>
 
   <!-- Formulaire d'entrée -->
-  <div class="row mb-4">
-    <div class="col-lg-8">
+  <div id="formContainer" class="row mb-4 hidden-section">
+    <div class="col-lg-6 mx-auto">
       <div class="card shadow-sm">
         <div class="card-body">
           <h5 class="card-title fw-bold mb-4">
@@ -238,23 +258,10 @@
               <select class="form-select" id="reason" name="reason">
                 <option value="">-- Sélectionner un motif --</option>
                 <option value="Commande reçue">Commande reçue</option>
-                <option value="Retour client">Retour client</option>
-                <option value="Transfert">Transfert de stock</option>
                 <option value="Correction">Correction d'inventaire</option>
                 <option value="Don reçu">Don reçu</option>
                 <option value="Autre">Autre</option>
               </select>
-            </div>
-
-            <div class="form-group">
-              <label for="reference" class="form-label">N° de commande / Bon de livraison</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                id="reference"
-                name="reference"
-                placeholder="Ex: CMD-2026-001"
-              >
             </div>
 
             <div class="form-group">
@@ -269,7 +276,12 @@
             </div>
 
             <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-              <a href="list.html" class="btn btn-outline-secondary btn-submit">Annuler</a>
+              <div class="d-flex gap-2">
+                <a href="list.html" class="btn btn-outline-secondary btn-submit">Annuler</a>
+                <a href="entry.html" class="btn btn-info btn-submit">
+                  <i class="fas fa-exchange-alt"></i> Changer
+                </a>
+              </div>
               <button type="submit" class="btn btn-success btn-submit">
                 <i class="fas fa-sign-in-alt"></i> Confirmer l'entrée
               </button>
@@ -279,27 +291,14 @@
       </div>
     </div>
   </div>
-
-  <!-- Dernières entrées -->
-  <div class="row mb-4">
-    <div class="col-lg-8">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title fw-bold mb-4">
-            <i class="fas fa-history"></i> Dernières entrées du produit
-          </h5>
-          <div id="recentEntriesContainer">
-            <p class="text-muted">Chargement...</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../../assets/js/notifications.js"></script>
 <script>
+  // Initialiser le système de notifications
+  const notify = new NotificationSystem({ position: 'top-right', duration: 5000 });
+
   const API_BASE = '/api';
   let supplyId = null;
   let currentSupply = null;
@@ -312,34 +311,85 @@
 
   // Initialisation
   async function init() {
-    supplyId = getSupplyId();
-    
-    if (!supplyId) {
-      showError('Produit non spécifié. Veuillez retourner à la liste des stocks.');
-      document.getElementById('entryForm').style.display = 'none';
-      return;
-    }
-
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('jwt');
     if (!token) {
       window.location.href = '../../index.html';
       return;
     }
+
+    supplyId = getSupplyId();
+    
+    if (!supplyId) {
+      // Afficher le formulaire de sélection
+      document.getElementById('selectSupplyContainer').classList.remove('hidden-section');
+      await loadSuppliesList();
+    } else {
+      // Afficher la fiche du produit et le formulaire
+      document.getElementById('productDetailsContainer').classList.remove('hidden-section');
+      document.getElementById('formContainer').classList.remove('hidden-section');
+      
+      // Définir la date d'aujourd'hui
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('entryDate').value = today;
+
+      await loadSupplyDetails();
+      setupFormHandlers();
+    }
+
+    updateUserMenu();
+  }
+
+  // Charge la liste des fournitures
+  async function loadSuppliesList() {
+    try {
+      const token = localStorage.getItem('jwt');
+      const response = await fetch(`${API_BASE}/supplies/list.php`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        throw new Error('Impossible de charger la liste des fournitures');
+      }
+
+      const data = await response.json();
+      const select = document.getElementById('supplySelect');
+      
+      data.data.forEach(supply => {
+        const option = document.createElement('option');
+        option.value = supply.id;
+        option.textContent = `${supply.reference} - ${supply.designation} (Stock: ${supply.quantite_stock})`;
+        select.appendChild(option);
+      });
+
+    } catch (error) {
+      console.error('Erreur:', error);
+      showError('Erreur lors du chargement des fournitures');
+    }
+  }
+
+  // Gère le changement de sélection
+  async function onSupplyChange() {
+    const selectId = document.getElementById('supplySelect').value;
+    if (!selectId) return;
+
+    supplyId = selectId;
+    document.getElementById('selectSupplyContainer').classList.add('hidden-section');
+    document.getElementById('productDetailsContainer').classList.remove('hidden-section');
+    document.getElementById('formContainer').classList.remove('hidden-section');
 
     // Définir la date d'aujourd'hui
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('entryDate').value = today;
 
     await loadSupplyDetails();
-    await loadRecentEntries();
     setupFormHandlers();
-    updateUserMenu();
+    window.scrollTo(0, 0);
   }
 
   // Charge les détails du produit
   async function loadSupplyDetails() {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('jwt');
       const response = await fetch(`${API_BASE}/supplies/show.php?id=${supplyId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -349,61 +399,16 @@
       }
 
       const data = await response.json();
-      currentSupply = data;
+      currentSupply = data.data;
 
-      document.getElementById('supplyName').textContent = data.nom || 'N/A';
-      document.getElementById('supplyRef').textContent = data.reference || 'N/A';
-      document.getElementById('supplyStock').textContent = data.quantite_stock || '0';
-      document.getElementById('supplyAlert').textContent = data.seuil_alerte || '0';
+      document.getElementById('supplyName').textContent = currentSupply.designation || 'N/A';
+      document.getElementById('supplyRef').textContent = currentSupply.reference || 'N/A';
+      document.getElementById('supplyStock').textContent = currentSupply.quantite_stock || '0';
+      document.getElementById('supplyAlert').textContent = currentSupply.seuil_alerte || '0';
 
     } catch (error) {
       console.error('Erreur:', error);
       showError(error.message);
-    }
-  }
-
-  // Charge les dernières entrées du produit
-  async function loadRecentEntries() {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/supplies/mouvement.php?id=${supplyId}&limit=5`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (!response.ok) {
-        throw new Error('Impossible de charger les mouvements');
-      }
-
-      const data = await response.json();
-      const entries = data.data.filter(m => m.type === 'ENTREE');
-
-      if (entries.length === 0) {
-        document.getElementById('recentEntriesContainer').innerHTML = 
-          '<p class="text-muted">Aucune entrée enregistrée pour ce produit.</p>';
-        return;
-      }
-
-      let html = '<div class="table-responsive"><table class="table table-sm">';
-      html += '<thead><tr><th>Date</th><th>Quantité</th><th>Motif</th><th>Utilisateur</th></tr></thead><tbody>';
-
-      entries.forEach(entry => {
-        html += `
-          <tr class="mouvement-entree">
-            <td>${entry.date_mouvement}</td>
-            <td><span class="badge bg-success">${entry.quantite}</span></td>
-            <td>${entry.motif || '--'}</td>
-            <td><small>${entry.utilisateur}</small></td>
-          </tr>
-        `;
-      });
-
-      html += '</tbody></table></div>';
-      document.getElementById('recentEntriesContainer').innerHTML = html;
-
-    } catch (error) {
-      console.error('Erreur:', error);
-      document.getElementById('recentEntriesContainer').innerHTML = 
-        '<p class="text-danger">Erreur lors du chargement des entrées.</p>';
     }
   }
 
@@ -415,7 +420,6 @@
       const quantity = parseInt(document.getElementById('quantity').value);
       const entryDate = document.getElementById('entryDate').value;
       const reason = document.getElementById('reason').value;
-      const reference = document.getElementById('reference').value;
       const notes = document.getElementById('notes').value;
 
       // Validations
@@ -430,16 +434,15 @@
       }
 
       // Envoyer la requête
-      await submitEntry(quantity, entryDate, reason, reference, notes);
+      await submitEntry(quantity, entryDate, reason, notes);
     });
   }
 
   // Soumet l'entrée
-  async function submitEntry(quantity, entryDate, reason, reference, notes) {
+  async function submitEntry(quantity, entryDate, reason, notes) {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('jwt');
       let motif = reason || '';
-      if (reference) motif += (motif ? ' - ' : '') + reference;
       if (notes) motif += (motif ? ' - ' : '') + notes;
 
       const response = await fetch(`${API_BASE}/supplies/mouvement.php?id=${supplyId}`, {
@@ -463,8 +466,8 @@
 
       const result = await response.json();
       
-      // Afficher la confirmation
-      showSuccessMessage('Entrée enregistrée avec succès!');
+      // Afficher la confirmation avec notification
+      notify.success('Succès', 'Entrée enregistrée avec succès!');
       
       // Réinitialiser le formulaire et recharger les données
       document.getElementById('entryForm').reset();
@@ -472,12 +475,6 @@
       document.getElementById('quantity').value = 1;
       
       await loadSupplyDetails();
-      await loadRecentEntries();
-
-      // Rediriger après 2 secondes
-      setTimeout(() => {
-        window.location.href = 'view.html?id=' + supplyId;
-      }, 2000);
 
     } catch (error) {
       console.error('Erreur:', error);
@@ -501,27 +498,29 @@
   }
 
   function showError(message) {
-    const alert = document.getElementById('alert');
-    alert.textContent = message;
-    alert.classList.remove('d-none');
+    notify.error('Erreur', message);
     window.scrollTo(0, 0);
   }
 
   function showSuccessMessage(message) {
-    const msg = document.getElementById('successMessage');
-    msg.textContent = message;
-    msg.style.display = 'block';
+    notify.success('Succès', message);
     window.scrollTo(0, 0);
   }
 
   function hideSuccessMessage() {
-    document.getElementById('successMessage').style.display = 'none';
+    // Les notifications s'auto-ferment après la durée définie
   }
 
   // Mises à jour de l'interface utilisateur
   async function updateUserMenu() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('jwt');
     if (!token) return;
+
+    // Pré-rempli depuis le localStorage (évite un flash)
+    const cached = JSON.parse(localStorage.getItem('user') || '{}');
+    if (cached.prenom) {
+      document.getElementById('userMenuText').textContent = cached.prenom + ' ' + cached.nom;
+    }
 
     try {
       const response = await fetch(`${API_BASE}/user/me.php`, {
@@ -529,7 +528,8 @@
       });
 
       if (response.ok) {
-        const user = await response.json();
+        const data = await response.json();
+        const user = data.user;
         document.getElementById('userMenuText').textContent = user.prenom + ' ' + user.nom;
         document.getElementById('profileLink').onclick = (e) => {
           e.preventDefault();
@@ -547,7 +547,7 @@
     if (logoutBtn) {
       logoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        localStorage.removeItem('token');
+        localStorage.removeItem('jwt');
         window.location.href = '../../index.html';
       });
     }

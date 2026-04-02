@@ -78,6 +78,9 @@
     .quantity-input {
       font-size: 1.1rem;
     }
+    .hidden-section {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -99,7 +102,7 @@
           <ul class="dropdown-menu" aria-labelledby="stockDropdown">
             <li><a class="dropdown-item" href="list.html">Consulter stock</a></li>
             <li><a class="dropdown-item" href="list.html" onclick="openCreateModal()">Ajouter produit</a></li>
-            <li><a class="dropdown-item" href="#">Ajuster stock</a></li>
+            
           </ul>
         </li>
 
@@ -147,8 +150,6 @@
 </nav>
 
 <div class="container-fluid mt-5">
-  <div id="alert" class="alert alert-danger d-none"></div>
-  <div id="successMessage" class="success-message"></div>
 
   <!-- En-tête -->
   <div class="row mb-4">
@@ -165,9 +166,28 @@
     </div>
   </div>
 
+  <!-- Sélection de la fourniture -->
+  <div id="selectSupplyContainer" class="row mb-4 hidden-section">
+    <div class="col-lg-6 mx-auto">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title fw-bold mb-4">
+            <i class="fas fa-box"></i> Sélectionner une fourniture
+          </h5>
+          <div class="form-group">
+            <label for="supplySelect" class="form-label">Fourniture <span class="text-danger">*</span></label>
+            <select class="form-select form-select-lg" id="supplySelect" onchange="onSupplyChange()">
+              <option value="">-- Choisir une fourniture --</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Carte du produit -->
-  <div class="row mb-4">
-    <div class="col-lg-8">
+  <div id="productDetailsContainer" class="row mb-4 hidden-section">
+    <div class="col-lg-6 mx-auto">
       <div class="card supply-card shadow-sm">
         <div class="card-body">
           <div class="supply-info">
@@ -199,8 +219,8 @@
   </div>
 
   <!-- Formulaire de sortie -->
-  <div class="row mb-4">
-    <div class="col-lg-8">
+  <div id="formContainer" class="row mb-4 hidden-section">
+    <div class="col-lg-6 mx-auto">
       <div class="card shadow-sm">
         <div class="card-body">
           <h5 class="card-title fw-bold mb-4">
@@ -248,10 +268,11 @@
               <label for="reason" class="form-label">Motif de la sortie</label>
               <select class="form-select" id="reason" name="reason">
                 <option value="">-- Sélectionner un motif --</option>
-                <option value="Dispensation">Dispensation/Distribution</option>
+                <option value="Intervention">Intervention</option>
                 <option value="Destruction">Destruction</option>
                 <option value="Expiration">Produit expiré</option>
-                <option value="Retour">Retour fournisseur</option>
+                <option value="Manoeuvre">Utilisation manœuvre</option>
+                <option value="JSP">Utilisation JSP</option>
                 <option value="Ajustement">Ajustement d'inventaire</option>
                 <option value="Autre">Autre</option>
               </select>
@@ -269,7 +290,12 @@
             </div>
 
             <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-              <a href="list.html" class="btn btn-outline-secondary btn-submit">Annuler</a>
+              <div class="d-flex gap-2">
+                <a href="list.html" class="btn btn-outline-secondary btn-submit">Annuler</a>
+                <a href="exit.html" class="btn btn-info btn-submit">
+                  <i class="fas fa-exchange-alt"></i> Changer
+                </a>
+              </div>
               <button type="submit" class="btn btn-danger btn-submit">
                 <i class="fas fa-sign-out-alt"></i> Confirmer la sortie
               </button>
@@ -279,27 +305,14 @@
       </div>
     </div>
   </div>
-
-  <!-- Dernières sorties -->
-  <div class="row mb-4">
-    <div class="col-lg-8">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title fw-bold mb-4">
-            <i class="fas fa-history"></i> Dernières sorties du produit
-          </h5>
-          <div id="recentExitsContainer">
-            <p class="text-muted">Chargement...</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../../assets/js/notifications.js"></script>
 <script>
+  // Initialiser le système de notifications
+  const notify = new NotificationSystem({ position: 'top-right', duration: 5000 });
+
   const API_BASE = '/api';
   let supplyId = null;
   let currentSupply = null;
@@ -312,34 +325,85 @@
 
   // Initialisation
   async function init() {
-    supplyId = getSupplyId();
-    
-    if (!supplyId) {
-      showError('Produit non spécifié. Veuillez retourner à la liste des stocks.');
-      document.getElementById('exitForm').style.display = 'none';
-      return;
-    }
-
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('jwt');
     if (!token) {
       window.location.href = '../../index.html';
       return;
     }
+
+    supplyId = getSupplyId();
+    
+    if (!supplyId) {
+      // Afficher le formulaire de sélection
+      document.getElementById('selectSupplyContainer').classList.remove('hidden-section');
+      await loadSuppliesList();
+    } else {
+      // Afficher la fiche du produit et le formulaire
+      document.getElementById('productDetailsContainer').classList.remove('hidden-section');
+      document.getElementById('formContainer').classList.remove('hidden-section');
+      
+      // Définir la date d'aujourd'hui
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('exitDate').value = today;
+
+      await loadSupplyDetails();
+      setupFormHandlers();
+    }
+
+    updateUserMenu();
+  }
+
+  // Charge la liste des fournitures
+  async function loadSuppliesList() {
+    try {
+      const token = localStorage.getItem('jwt');
+      const response = await fetch(`${API_BASE}/supplies/list.php`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        throw new Error('Impossible de charger la liste des fournitures');
+      }
+
+      const data = await response.json();
+      const select = document.getElementById('supplySelect');
+      
+      data.data.forEach(supply => {
+        const option = document.createElement('option');
+        option.value = supply.id;
+        option.textContent = `${supply.reference} - ${supply.designation} (Stock: ${supply.quantite_stock})`;
+        select.appendChild(option);
+      });
+
+    } catch (error) {
+      console.error('Erreur:', error);
+      showError('Erreur lors du chargement des fournitures');
+    }
+  }
+
+  // Gère le changement de sélection
+  async function onSupplyChange() {
+    const selectId = document.getElementById('supplySelect').value;
+    if (!selectId) return;
+
+    supplyId = selectId;
+    document.getElementById('selectSupplyContainer').classList.add('hidden-section');
+    document.getElementById('productDetailsContainer').classList.remove('hidden-section');
+    document.getElementById('formContainer').classList.remove('hidden-section');
 
     // Définir la date d'aujourd'hui
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('exitDate').value = today;
 
     await loadSupplyDetails();
-    await loadRecentExits();
     setupFormHandlers();
-    updateUserMenu();
+    window.scrollTo(0, 0);
   }
 
   // Charge les détails du produit
   async function loadSupplyDetails() {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('jwt');
       const response = await fetch(`${API_BASE}/supplies/show.php?id=${supplyId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -349,71 +413,26 @@
       }
 
       const data = await response.json();
-      currentSupply = data;
+      currentSupply = data.data;
 
-      document.getElementById('supplyName').textContent = data.nom || 'N/A';
-      document.getElementById('supplyRef').textContent = data.reference || 'N/A';
-      document.getElementById('supplyStock').textContent = data.quantite_stock || '0';
-      document.getElementById('supplyAlert').textContent = data.seuil_alerte || '0';
-      document.getElementById('maxStock').textContent = data.quantite_stock || '0';
+      document.getElementById('supplyName').textContent = currentSupply.designation || 'N/A';
+      document.getElementById('supplyRef').textContent = currentSupply.reference || 'N/A';
+      document.getElementById('supplyStock').textContent = currentSupply.quantite_stock || '0';
+      document.getElementById('supplyAlert').textContent = currentSupply.seuil_alerte || '0';
+      document.getElementById('maxStock').textContent = currentSupply.quantite_stock || '0';
 
       // Désactiver le formulaire si stock = 0
-      if (data.quantite_stock <= 0) {
+      if (currentSupply.quantite_stock <= 0) {
         document.getElementById('quantity').max = 0;
-        showStockAlert('Stock insuffisant: ' + data.quantite_stock + ' unités disponibles');
+        showStockAlert('Stock insuffisant: ' + currentSupply.quantite_stock + ' unités disponibles');
       } else {
-        document.getElementById('quantity').max = data.quantite_stock;
+        document.getElementById('quantity').max = currentSupply.quantite_stock;
         hideStockAlert();
       }
 
     } catch (error) {
       console.error('Erreur:', error);
       showError(error.message);
-    }
-  }
-
-  // Charge les dernières sorties du produit
-  async function loadRecentExits() {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/supplies/mouvement.php?id=${supplyId}&limit=5`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (!response.ok) {
-        throw new Error('Impossible de charger les mouvements');
-      }
-
-      const data = await response.json();
-      const exits = data.data.filter(m => m.type === 'SORTIE');
-
-      if (exits.length === 0) {
-        document.getElementById('recentExitsContainer').innerHTML = 
-          '<p class="text-muted">Aucune sortie enregistrée pour ce produit.</p>';
-        return;
-      }
-
-      let html = '<div class="table-responsive"><table class="table table-sm">';
-      html += '<thead><tr><th>Date</th><th>Quantité</th><th>Motif</th><th>Utilisateur</th></tr></thead><tbody>';
-
-      exits.forEach(exit => {
-        html += `
-          <tr class="mouvement-sortie">
-            <td>${exit.date_mouvement}</td>
-            <td><span class="badge bg-danger">${exit.quantite}</span></td>
-            <td>${exit.motif || '--'}</td>
-            <td><small>${exit.utilisateur}</small></td>
-          </tr>
-        `;
-      });
-
-      html += '</tbody></table></div>';
-      document.getElementById('recentExitsContainer').innerHTML = html;
-
-    } catch (error) {
-      console.error('Erreur:', error);
-      document.getElementById('recentExitsContainer').innerHTML = 
-        '<p class="text-danger">Erreur lors du chargement des sorties.</p>';
     }
   }
 
@@ -451,7 +470,7 @@
   // Soumet la sortie
   async function submitExit(quantity, exitDate, reason, notes) {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('jwt');
       const motif = reason ? reason + (notes ? ' - ' + notes : '') : notes;
 
       const response = await fetch(`${API_BASE}/supplies/mouvement.php?id=${supplyId}`, {
@@ -475,8 +494,8 @@
 
       const result = await response.json();
       
-      // Afficher la confirmation
-      showSuccessMessage('Sortie enregistrée avec succès!');
+      // Afficher la confirmation avec notification
+      notify.success('Succès', 'Sortie enregistrée avec succès!');
       
       // Réinitialiser le formulaire et recharger les données
       document.getElementById('exitForm').reset();
@@ -484,12 +503,6 @@
       document.getElementById('quantity').value = 1;
       
       await loadSupplyDetails();
-      await loadRecentExits();
-
-      // Rediriger après 2 secondes
-      setTimeout(() => {
-        window.location.href = 'view.html?id=' + supplyId;
-      }, 2000);
 
     } catch (error) {
       console.error('Erreur:', error);
@@ -516,37 +529,28 @@
   }
 
   function showError(message) {
-    const alert = document.getElementById('alert');
-    alert.textContent = message;
-    alert.classList.remove('d-none');
+    notify.error('Erreur', message);
     window.scrollTo(0, 0);
   }
 
   function showStockAlert(message) {
-    const alert = document.getElementById('stockAlert');
-    document.getElementById('stockAlertMsg').textContent = message;
-    alert.classList.remove('d-none');
+    notify.warning('Attention', message);
   }
 
   function hideStockAlert() {
-    document.getElementById('stockAlert').classList.add('d-none');
-  }
-
-  function showSuccessMessage(message) {
-    const msg = document.getElementById('successMessage');
-    msg.textContent = message;
-    msg.style.display = 'block';
-    window.scrollTo(0, 0);
-  }
-
-  function hideSuccessMessage() {
-    document.getElementById('successMessage').style.display = 'none';
+    // Les notifications s'auto-ferment après la durée définie
   }
 
   // Mises à jour de l'interface utilisateur
   async function updateUserMenu() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('jwt');
     if (!token) return;
+
+    // Pré-rempli depuis le localStorage (évite un flash)
+    const cached = JSON.parse(localStorage.getItem('user') || '{}');
+    if (cached.prenom) {
+      document.getElementById('userMenuText').textContent = cached.prenom + ' ' + cached.nom;
+    }
 
     try {
       const response = await fetch(`${API_BASE}/user/me.php`, {
@@ -554,7 +558,8 @@
       });
 
       if (response.ok) {
-        const user = await response.json();
+        const data = await response.json();
+        const user = data.user;
         document.getElementById('userMenuText').textContent = user.prenom + ' ' + user.nom;
         document.getElementById('profileLink').onclick = (e) => {
           e.preventDefault();
@@ -572,7 +577,7 @@
     if (logoutBtn) {
       logoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        localStorage.removeItem('token');
+        localStorage.removeItem('jwt');
         window.location.href = '../../index.html';
       });
     }
