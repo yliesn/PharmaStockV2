@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestion des Fournitures - PharmaStock</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../assets/css/nav.css">
+  <style>
+    .badge-stock {
+      font-size: 0.85rem;
+      padding: 0.4rem 0.6rem;
+    }
+    .table-responsive {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .search-box {
+      max-width: 300px;
+    }
+    /* Force le scroll horizontal sur mobile */
+    @media (max-width: 768px) {
+      .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .table {
+        min-width: 750px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fs-4 fw-bold text-primary" href="../../views/dashboard.html">PharmaStock</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto me-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle active" href="#" id="stockDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Stock
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="stockDropdown">
+            <li><a class="dropdown-item" href="list.html">Consulter stock</a></li>
+            <li><a class="dropdown-item" href="#" onclick="openCreateModal()">Ajouter produit</a></li>
+            <li><a class="dropdown-item" href="#">Ajuster stock</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="mouvementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Mouvement
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="mouvementDropdown">
+            <li><a class="dropdown-item" href="entry.html">Entrées</a></li>
+            <li><a class="dropdown-item" href="exit.html">Sorties</a></li>
+            <li><a class="dropdown-item" href="#">Historique</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#">Inventaire</a>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Administration
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+            <li><a class="dropdown-item" href="#">Utilisateurs</a></li>
+            <li><a class="dropdown-item" href="#">Catégories</a></li>
+            <li><a class="dropdown-item" href="#">Paramètres</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span id="userMenuText">Chargement…</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="#" id="profileLink">Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Déconnexion</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid mt-5">
+  <div id="alert" class="alert alert-danger d-none"></div>
+
+  <!-- En-tête -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <h2 class="fw-bold">Gestion des Fournitures</h2>
+      <p class="text-muted">Consulter et gérer l'inventaire des fournitures</p>
+    </div>
+    <div class="col-md-6 text-end">
+      <button class="btn btn-primary" onclick="openCreateModal()">
+        <i class="bi bi-plus-lg"></i> Ajouter une fourniture
+      </button>
+    </div>
+  </div>
+
+  <!-- Barre de recherche -->
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <div class="input-group">
+        <input type="text" id="searchInput" class="form-control" placeholder="Rechercher par référence ou désignation...">
+        <button class="btn btn-outline-secondary" type="button" onclick="loadSupplies(1)">
+          <i class="bi bi-search"></i> Rechercher
+        </button>
+      </div>
+    </div>
+    <div class="col-md-6 text-end">
+      <span class="text-muted">
+        Total: <strong id="totalSupplies">0</strong> fournitures
+      </span>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card bg-light border-0">
+        <div class="card-body p-3">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h6 class="mb-3 fw-bold">Filtres</h6>
+              <div class="row g-2">
+                <div class="col-auto">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="filterStockNormal" onchange="loadSupplies(1)">
+                    <label class="form-check-label" for="filterStockNormal">
+                      Stock normal <span class="badge bg-success">Stock ≥ Alerte</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="filterStockBas" onchange="loadSupplies(1)">
+                    <label class="form-check-label" for="filterStockBas">
+                      Stock bas <span class="badge bg-warning">0 < Stock < Alerte</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="filterRupture" onchange="loadSupplies(1)">
+                    <label class="form-check-label" for="filterRupture">
+                      Rupture <span class="badge bg-danger">Stock = 0</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="filterCommande" onchange="loadSupplies(1)">
+                    <label class="form-check-label" for="filterCommande">
+                      En commande <span class="badge bg-info">Commande en cours</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 text-end">
+              <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
+                <i class="bi bi-x-circle"></i> Réinitialiser les filtres
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau des fournitures -->
+  <div class="card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 15%;">Référence</th>
+            <th style="width: 35%;">Désignation</th>
+            <th style="width: 12%; text-align: center;">Stock</th>
+            <th style="width: 12%; text-align: center;">Alerte</th>
+            <th style="width: 15%; text-align: center;">Commande</th>
+            <th style="width: 9%; text-align: center;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="suppliesTableBody">
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">Chargement...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <nav aria-label="Page navigation">
+        <ul class="pagination" id="paginationNav">
+          <!-- Sera rempli dynamiquement -->
+        </ul>
+      </nav>
+    </div>
+    <div class="col-md-6 text-end">
+      <select id="limitSelect" class="form-select d-inline-block" style="width: 120px;" onchange="saveLimitToStorage(this.value); loadSupplies(1)">
+        <option value="10"selected>10 par page</option>
+        <option value="15" >15 par page</option>
+        <option value="20">20 par page</option>
+        <option value="50">50 par page</option>
+        <option value="100">100 par page</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Créer Fourniture -->
+<div class="modal fade" id="createModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ajouter une fourniture</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="supplyForm">
+          <div class="mb-3">
+            <label for="designation" class="form-label">Désignation *</label>
+            <input type="text" class="form-control" id="designation" required>
+          </div>
+          <div class="mb-3">
+            <label for="conditionnement" class="form-label">Conditionnement</label>
+            <input type="text" class="form-control" id="conditionnement" placeholder="ex: Boîte x 20">
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <label for="quantite_stock" class="form-label">Quantité</label>
+              <input type="number" class="form-control" id="quantite_stock" value="0" min="0">
+            </div>
+            <div class="col-md-6">
+              <label for="seuil_alerte" class="form-label">Seuil alerte</label>
+              <input type="number" class="form-control" id="seuil_alerte" min="0">
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="commande_en_cours">
+              <label class="form-check-label" for="commande_en_cours">
+                Commande en cours
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-primary" id="submitBtn" onclick="submitSupplyForm()">Créer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/notifications.js"></script>
+<script>
+  const API = '../../api';
+  const notify = new NotificationSystem({ position: 'top-right', duration: 4000 });
+  let currentPage = 1;
+  let currentSearch = '';
+  let currentSupplyId = null;
+  let allSupplies = [];
+  let allPagination = {};
+
+  // Vérifie l'authentification
+  if (!localStorage.getItem('jwt')) {
+    window.location = '/index.html';
+  }
+
+  // Initialise la page
+  document.addEventListener('DOMContentLoaded', () => {
+    loadUserMenu();
+    loadLimitFromStorage();
+    loadSupplies(1);
+    setupEventListeners();
+  });
+
+  // Load user menu
+  function loadUserMenu() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    document.getElementById('userMenuText').textContent = `${user.prenom || 'User'} ${user.nom || ''}`;
+    
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('jwt');
+      localStorage.removeItem('user');
+      window.location = '/index.html';
+    });
+  }
+
+  // Setup event listeners
+  function setupEventListeners() {
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        currentSearch = document.getElementById('searchInput').value;
+        loadSupplies(1);
+      }
+    });
+  }
+
+  // Charge la limite depuis le localStorage
+  function loadLimitFromStorage() {
+    const savedLimit = localStorage.getItem('suppliesLimit');
+    if (savedLimit) {
+      document.getElementById('limitSelect').value = savedLimit;
+    }
+  }
+
+  // Sauvegarde la limite dans le localStorage
+  function saveLimitToStorage(limit) {
+    localStorage.setItem('suppliesLimit', limit);
+  }
+
+  // Charge les fournitures
+  async function loadSupplies(page) {
+    currentPage = page;
+    const limit = document.getElementById('limitSelect').value;
+    const search = document.getElementById('searchInput').value;
+
+    // Si on change de filtre/recherche, on refait l'appel API. Sinon on pagine juste côté client
+    const hasFiltersChanged = 
+      document.getElementById('filterStockNormal').checked ||
+      document.getElementById('filterStockBas').checked ||
+      document.getElementById('filterRupture').checked ||
+      document.getElementById('filterCommande').checked ||
+      search !== currentSearch;
+
+    // Si c'est juste un changement de page et pas de filtre, ne pas refaire l'appel API
+    if (page !== 1 && !hasFiltersChanged && allSupplies.length > 0) {
+      // Juste refaire la pagination côté client
+      let filtered = applyFilters(allSupplies);
+      renderSuppliesTable(filtered);
+      renderFilteredPagination(filtered, parseInt(limit));
+      return;
+    }
+
+    currentSearch = search;
+
+    // Récupère les données avec une limite élevée pour obtenir tous les résultats
+    const url = new URL(`${API}/supplies/list.php`, window.location.origin);
+    url.searchParams.append('page', 1);
+    url.searchParams.append('limit', 100); // Récupère jusqu'à 100 résultats
+    if (search) url.searchParams.append('search', search);
+
+    try {
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('jwt')}` },
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem('jwt');
+        window.location = '/index.html';
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        notify.error('Erreur', data.error || 'Erreur lors du chargement');
+        return;
+      }
+
+      // Sauvegarde les données originales
+      allSupplies = data.data;
+      allPagination = data.pagination;
+
+      // Applique les filtres côté client
+      let filtered = applyFilters(allSupplies);
+
+      // Réinitialise à la page 1 si des filtres ont changé
+      currentPage = 1;
+
+      // Affiche le total original
+      document.getElementById('totalSupplies').textContent = data.pagination.total;
+
+      // Affiche les résultats filtrés et la pagination
+      renderSuppliesTable(filtered);
+      renderFilteredPagination(filtered, parseInt(limit));
+    } catch (e) {
+      notify.error('Erreur', 'Impossible de contacter le serveur');
+      console.error(e);
+    }
+  }
+
+  // Applique les filtres
+  function applyFilters(supplies) {
+    const filterStockNormal = document.getElementById('filterStockNormal').checked;
+    const filterStockBas = document.getElementById('filterStockBas').checked;
+    const filterRupture = document.getElementById('filterRupture').checked;
+    const filterCommande = document.getElementById('filterCommande').checked;
+
+    // Si aucun filtre, retourne tous les résultats
+    if (!filterStockNormal && !filterStockBas && !filterRupture && !filterCommande) {
+      return supplies;
+    }
+
+    return supplies.filter(s => {
+      let matches = false;
+      
+      // Stock normal: stock >= seuil_alerte
+      if (filterStockNormal && s.quantite_stock > 0 && (!s.seuil_alerte || s.quantite_stock > s.seuil_alerte)) {
+        matches = true;
+      }
+      
+      // Stock bas: 0 < stock < seuil_alerte
+      if (filterStockBas && s.quantite_stock > 0 && s.seuil_alerte && s.quantite_stock <= s.seuil_alerte) {
+        matches = true;
+      }
+      
+      // Rupture: stock = 0
+      if (filterRupture && s.quantite_stock === 0) {
+        matches = true;
+      }
+      
+      // En commande
+      if (filterCommande && s.commande_en_cours) {
+        matches = true;
+      }
+      
+      return matches;
+    });
+  }
+
+  // Affiche la pagination avec les résultats filtrés
+  function renderFilteredPagination(filtered, limit) {
+    const nav = document.getElementById('paginationNav');
+    const totalPages = Math.ceil(filtered.length / limit);
+
+    if (totalPages <= 1) {
+      nav.innerHTML = '';
+      return;
+    }
+
+    let html = '';
+    const prev = currentPage > 1 ? currentPage - 1 : null;
+    const next = currentPage < totalPages ? currentPage + 1 : null;
+
+    if (prev) {
+      html += `<li class="page-item"><a class="page-link" href="javascript:loadSupplies(${prev})">Précédent</a></li>`;
+    }
+
+    for (let i = 1; i <= totalPages; i++) {
+      const active = i === currentPage ? 'active' : '';
+      html += `<li class="page-item ${active}"><a class="page-link" href="javascript:loadSupplies(${i})">${i}</a></li>`;
+    }
+
+    if (next) {
+      html += `<li class="page-item"><a class="page-link" href="javascript:loadSupplies(${next})">Suivant</a></li>`;
+    }
+
+    nav.innerHTML = html;
+  }
+
+  // Affiche le tableau
+  function renderSuppliesTable(allSupplies) {
+    const limit = parseInt(document.getElementById('limitSelect').value);
+    const offset = (currentPage - 1) * limit;
+    const supplies = allSupplies.slice(offset, offset + limit);
+
+    const tbody = document.getElementById('suppliesTableBody');
+    if (supplies.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Aucune fourniture trouvée</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = supplies.map(s => `
+      <tr>
+        <td><strong>${escapeHtml(s.reference)}</strong></td>
+        <td>
+          <div>${escapeHtml(s.designation)}</div>
+          ${s.conditionnement ? `<div style="font-size: 0.85rem; color: #999;">${escapeHtml(s.conditionnement)}</div>` : ''}
+        </td>
+        <td style="text-align: center;">
+          <span class="badge bg-info">${s.quantite_stock}</span>
+        </td>
+        <td style="text-align: center;">
+          ${s.seuil_alerte ? `<span class="badge bg-warning">${s.seuil_alerte}</span>` : '-'}
+        </td>
+        <td style="text-align: center;">
+          ${s.commande_en_cours ? '<span class="badge bg-success">Oui</span>' : '<span class="badge bg-secondary">Non</span>'}
+        </td>
+        <td style="text-align: center;">
+          <a href="view.html?id=${s.id}" class="btn btn-sm btn-info" title="Voir détails"><i class="bi bi-eye"></i></a>
+          <a href="entry.html?id=${s.id}" class="btn btn-sm btn-success" title="Enregistrer une entrée"><i class="fas fa-arrow-left"></i></a>
+          <a href="exit.html?id=${s.id}" class="btn btn-sm btn-danger" title="Enregistrer une sortie"><i class="fas fa-arrow-right"></i></a>
+          <button class="btn btn-sm btn-warning" onclick="toggleOrder(${s.id}, ${s.commande_en_cours ? 'false' : 'true'})" title="${s.commande_en_cours ? 'Annuler commande' : 'Mettre en commande'}">
+            <i class="fas fa-truck"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // Affiche la pagination
+  function renderPagination(pagination) {
+    const nav = document.getElementById('paginationNav');
+    if (pagination.pages <= 1) {
+      nav.innerHTML = '';
+      return;
+    }
+
+    let html = '';
+    const prev = pagination.page > 1 ? pagination.page - 1 : null;
+    const next = pagination.page < pagination.pages ? pagination.page + 1 : null;
+
+    if (prev) {
+      html += `<li class="page-item"><a class="page-link" href="javascript:loadSupplies(${prev})">Précédent</a></li>`;
+    }
+
+    for (let i = 1; i <= pagination.pages; i++) {
+      const active = i === pagination.page ? 'active' : '';
+      html += `<li class="page-item ${active}"><a class="page-link" href="javascript:loadSupplies(${i})">${i}</a></li>`;
+    }
+
+    if (next) {
+      html += `<li class="page-item"><a class="page-link" href="javascript:loadSupplies(${next})">Suivant</a></li>`;
+    }
+
+    nav.innerHTML = html;
+  }
+
+  // Ouvre la modal de création
+  function openCreateModal() {
+    document.getElementById('supplyForm').reset();
+    const modal = new bootstrap.Modal(document.getElementById('createModal'));
+    modal.show();
+  }
+
+  // Soumet le formulaire de création
+  async function submitSupplyForm() {
+    const designation = document.getElementById('designation').value.trim();
+    const conditionnement = document.getElementById('conditionnement').value.trim();
+    const quantite_stock = parseInt(document.getElementById('quantite_stock').value) || 0;
+    const seuil_alerte = parseInt(document.getElementById('seuil_alerte').value) || 0;
+    const commande_en_cours = document.getElementById('commande_en_cours').checked;
+
+    if (!designation) {
+      notify.error('Erreur', 'Veuillez remplir la désignation');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/supplies/create.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('jwt')
+        },
+        body: JSON.stringify({
+          designation,
+          conditionnement,
+          quantite_stock,
+          seuil_alerte,
+          commande_en_cours
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        const ref = result.data.reference;
+        notify.success('Succès', `Fourniture créée: ${ref}`);
+        bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
+        loadSupplies(1);
+      } else {
+        notify.error('Erreur', result.error || 'Erreur lors de la création');
+      }
+    } catch (error) {
+      notify.error('Erreur', error.message);
+    }
+  }
+
+  // Efface tous les filtres
+  function clearFilters() {
+    document.getElementById('filterStockNormal').checked = false;
+    document.getElementById('filterStockBas').checked = false;
+    document.getElementById('filterRupture').checked = false;
+    document.getElementById('filterCommande').checked = false;
+    document.getElementById('searchInput').value = '';
+    loadSupplies(1);
+  }
+
+  // Bascule la commande en cours
+  async function toggleOrder(supplyId, shouldOrder) {
+    try {
+      const url = new URL(`${API}/supplies/update.php`, window.location.origin);
+      url.searchParams.append('id', supplyId);
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('jwt')
+        },
+        body: JSON.stringify({
+          commande_en_cours: shouldOrder
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        const status = shouldOrder ? 'mis en commande' : 'commande annulée';
+        notify.success('Succès', `Fourniture ${status}`);
+        loadSupplies(currentPage);
+      } else {
+        notify.error('Erreur', result.error || result.message || 'Erreur lors de la mise à jour');
+      }
+    } catch (error) {
+      notify.error('Erreur', error.message);
+    }
+  }
+
+  // Utilitaire pour échapper HTML
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,32 @@
+services:
+  web:
+    build: .                # <--- au lieu de image: php:8.2-apache
+    container_name: PharmaStockV2
+    volumes:
+      - ./src:/var/www/html:rw
+      # (retire la ligne du php.ini si tu ne l’utilises pas)
+    environment:
+      VIRTUAL_HOST: ${APP_DOMAIN}
+      LETSENCRYPT_HOST: ${APP_DOMAIN}
+      VIRTUAL_PORT: 80
+      APP_DB_HOST: ${DB_DOMAIN}
+      APP_DB_NAME: ${DB_NAME}
+      APP_DB_USER: ${DB_USER}
+      APP_DB_PASS: ${DB_PASS}
+    expose:
+      - "80"
+    networks:
+      - proxy
+      - dbnet
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+networks:
+  proxy:
+    external: true
+  dbnet:
+    external: true

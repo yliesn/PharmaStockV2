@@ -1,0 +1,29 @@
+/* Styles personnalisés minimaux pour Bootstrap */
+.navbar {
+    background-color: #fff !important;
+}
+
+.navbar-brand {
+    color: #4F46E5 !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+}
+
+.nav-link {
+    color: #333 !important;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+    color: #4F46E5 !important;
+}
+
+.dropdown-item {
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f3f4f6 !important;
+    color: #4F46E5 !important;
+}

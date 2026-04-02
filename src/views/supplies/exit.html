@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sortie de Stock - PharmaStock</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../assets/css/nav.css">
+  <style>
+    .supply-card {
+      border-left: 4px solid #dc3545;
+      transition: transform 0.2s;
+    }
+    .supply-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .form-section {
+      background-color: #f8f9fa;
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+    .supply-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .info-item {
+      padding: 1rem;
+      background: white;
+      border-radius: 6px;
+      border-left: 4px solid #0d6efd;
+    }
+    .info-label {
+      font-size: 0.85rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+    .info-value {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #333;
+    }
+    .info-value.stock {
+      color: #0d6efd;
+    }
+    .info-value.alert {
+      color: #dc3545;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-label {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+    .success-message {
+      background-color: #d4edda;
+      border-left: 4px solid #198754;
+      padding: 1rem;
+      border-radius: 6px;
+      display: none;
+    }
+    .alert-stock {
+      background-color: #f8d7da;
+      border-left: 4px solid #dc3545;
+    }
+    .btn-submit {
+      padding: 0.75rem 2rem;
+      font-weight: 600;
+    }
+    .quantity-input {
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fs-4 fw-bold text-primary" href="../../views/dashboard.html">PharmaStock</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto me-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="list.html" id="stockDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Stock
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="stockDropdown">
+            <li><a class="dropdown-item" href="list.html">Consulter stock</a></li>
+            <li><a class="dropdown-item" href="list.html" onclick="openCreateModal()">Ajouter produit</a></li>
+            <li><a class="dropdown-item" href="#">Ajuster stock</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle active" href="#" id="mouvementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Mouvement
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="mouvementDropdown">
+            <li><a class="dropdown-item" href="entry.html">Entrées</a></li>
+            <li><a class="dropdown-item active" href="#">Sorties</a></li>
+            <li><a class="dropdown-item" href="#">Historique</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#">Inventaire</a>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Administration
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+            <li><a class="dropdown-item" href="#">Utilisateurs</a></li>
+            <li><a class="dropdown-item" href="#">Catégories</a></li>
+            <li><a class="dropdown-item" href="#">Paramètres</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span id="userMenuText">Chargement…</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="#" id="profileLink">Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Déconnexion</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid mt-5">
+  <div id="alert" class="alert alert-danger d-none"></div>
+  <div id="successMessage" class="success-message"></div>
+
+  <!-- En-tête -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <div class="d-flex align-items-center gap-3">
+        <a href="list.html" class="btn btn-sm btn-outline-secondary">← Retour</a>
+        <div>
+          <h2 class="fw-bold mb-1">
+            <i class="fas fa-arrow-right text-danger"></i> Sortie de Stock
+          </h2>
+          <p class="text-muted mb-0">Enregistrer une sortie de produit</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carte du produit -->
+  <div class="row mb-4">
+    <div class="col-lg-8">
+      <div class="card supply-card shadow-sm">
+        <div class="card-body">
+          <div class="supply-info">
+            <div class="info-item">
+              <div class="info-label">Produit</div>
+              <div class="info-value" id="supplyName">Chargement...</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Référence</div>
+              <div class="info-value" id="supplyRef">--</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Stock actuel</div>
+              <div class="info-value stock" id="supplyStock">0</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Seuil d'alerte</div>
+              <div class="info-value" id="supplyAlert">--</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="stockAlert" class="alert alert-stock d-none mt-4">
+        <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Attention</h5>
+        <p id="stockAlertMsg" class="mb-0">Le stock est insuffisant pour cette sortie.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire de sortie -->
+  <div class="row mb-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title fw-bold mb-4">
+            <i class="fas fa-file-alt"></i> Enregistrer une sortie
+          </h5>
+
+          <form id="exitForm">
+            <div class="form-group">
+              <label for="quantity" class="form-label">Quantité à sortir <span class="text-danger">*</span></label>
+              <div class="input-group input-group-lg">
+                <button class="btn btn-outline-secondary" type="button" onclick="decrementQuantity()">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <input 
+                  type="number" 
+                  class="form-control quantity-input text-center" 
+                  id="quantity"
+                  name="quantity" 
+                  min="1" 
+                  max="1000"
+                  value="1"
+                  required
+                >
+                <button class="btn btn-outline-secondary" type="button" onclick="incrementQuantity()">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+              <small class="form-text text-muted d-block mt-2">
+                Stock disponible: <strong id="maxStock">0</strong>
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="exitDate" class="form-label">Date de sortie <span class="text-danger">*</span></label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="exitDate"
+                name="exitDate"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="reason" class="form-label">Motif de la sortie</label>
+              <select class="form-select" id="reason" name="reason">
+                <option value="">-- Sélectionner un motif --</option>
+                <option value="Dispensation">Dispensation/Distribution</option>
+                <option value="Destruction">Destruction</option>
+                <option value="Expiration">Produit expiré</option>
+                <option value="Retour">Retour fournisseur</option>
+                <option value="Ajustement">Ajustement d'inventaire</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="notes" class="form-label">Notes supplémentaires</label>
+              <textarea 
+                class="form-control" 
+                id="notes"
+                name="notes"
+                rows="3"
+                placeholder="Ajouter des notes..."
+              ></textarea>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+              <a href="list.html" class="btn btn-outline-secondary btn-submit">Annuler</a>
+              <button type="submit" class="btn btn-danger btn-submit">
+                <i class="fas fa-sign-out-alt"></i> Confirmer la sortie
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dernières sorties -->
+  <div class="row mb-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title fw-bold mb-4">
+            <i class="fas fa-history"></i> Dernières sorties du produit
+          </h5>
+          <div id="recentExitsContainer">
+            <p class="text-muted">Chargement...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/js/notifications.js"></script>
+<script>
+  const API_BASE = '/api';
+  let supplyId = null;
+  let currentSupply = null;
+
+  // Récupère l'ID du produit depuis l'URL
+  function getSupplyId() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('id');
+  }
+
+  // Initialisation
+  async function init() {
+    supplyId = getSupplyId();
+    
+    if (!supplyId) {
+      showError('Produit non spécifié. Veuillez retourner à la liste des stocks.');
+      document.getElementById('exitForm').style.display = 'none';
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '../../index.html';
+      return;
+    }
+
+    // Définir la date d'aujourd'hui
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('exitDate').value = today;
+
+    await loadSupplyDetails();
+    await loadRecentExits();
+    setupFormHandlers();
+    updateUserMenu();
+  }
+
+  // Charge les détails du produit
+  async function loadSupplyDetails() {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/supplies/show.php?id=${supplyId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        throw new Error('Impossible de charger les détails du produit');
+      }
+
+      const data = await response.json();
+      currentSupply = data;
+
+      document.getElementById('supplyName').textContent = data.nom || 'N/A';
+      document.getElementById('supplyRef').textContent = data.reference || 'N/A';
+      document.getElementById('supplyStock').textContent = data.quantite_stock || '0';
+      document.getElementById('supplyAlert').textContent = data.seuil_alerte || '0';
+      document.getElementById('maxStock').textContent = data.quantite_stock || '0';
+
+      // Désactiver le formulaire si stock = 0
+      if (data.quantite_stock <= 0) {
+        document.getElementById('quantity').max = 0;
+        showStockAlert('Stock insuffisant: ' + data.quantite_stock + ' unités disponibles');
+      } else {
+        document.getElementById('quantity').max = data.quantite_stock;
+        hideStockAlert();
+      }
+
+    } catch (error) {
+      console.error('Erreur:', error);
+      showError(error.message);
+    }
+  }
+
+  // Charge les dernières sorties du produit
+  async function loadRecentExits() {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/supplies/mouvement.php?id=${supplyId}&limit=5`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        throw new Error('Impossible de charger les mouvements');
+      }
+
+      const data = await response.json();
+      const exits = data.data.filter(m => m.type === 'SORTIE');
+
+      if (exits.length === 0) {
+        document.getElementById('recentExitsContainer').innerHTML = 
+          '<p class="text-muted">Aucune sortie enregistrée pour ce produit.</p>';
+        return;
+      }
+
+      let html = '<div class="table-responsive"><table class="table table-sm">';
+      html += '<thead><tr><th>Date</th><th>Quantité</th><th>Motif</th><th>Utilisateur</th></tr></thead><tbody>';
+
+      exits.forEach(exit => {
+        html += `
+          <tr class="mouvement-sortie">
+            <td>${exit.date_mouvement}</td>
+            <td><span class="badge bg-danger">${exit.quantite}</span></td>
+            <td>${exit.motif || '--'}</td>
+            <td><small>${exit.utilisateur}</small></td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table></div>';
+      document.getElementById('recentExitsContainer').innerHTML = html;
+
+    } catch (error) {
+      console.error('Erreur:', error);
+      document.getElementById('recentExitsContainer').innerHTML = 
+        '<p class="text-danger">Erreur lors du chargement des sorties.</p>';
+    }
+  }
+
+  // Gère la soumission du formulaire
+  function setupFormHandlers() {
+    document.getElementById('exitForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const quantity = parseInt(document.getElementById('quantity').value);
+      const exitDate = document.getElementById('exitDate').value;
+      const reason = document.getElementById('reason').value;
+      const notes = document.getElementById('notes').value;
+
+      // Validations
+      if (quantity <= 0) {
+        showError('Veuillez entrer une quantité valide');
+        return;
+      }
+
+      if (currentSupply.quantite_stock < quantity) {
+        showError('Quantité insuffisante en stock (disponible: ' + currentSupply.quantite_stock + ')');
+        return;
+      }
+
+      if (!exitDate) {
+        showError('Veuillez sélectionner une date');
+        return;
+      }
+
+      // Envoyer la requête
+      await submitExit(quantity, exitDate, reason, notes);
+    });
+  }
+
+  // Soumet la sortie
+  async function submitExit(quantity, exitDate, reason, notes) {
+    try {
+      const token = localStorage.getItem('token');
+      const motif = reason ? reason + (notes ? ' - ' + notes : '') : notes;
+
+      const response = await fetch(`${API_BASE}/supplies/mouvement.php?id=${supplyId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: 'SORTIE',
+          quantite: quantity,
+          motif: motif,
+          date_mouvement: exitDate
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erreur lors de l\'enregistrement');
+      }
+
+      const result = await response.json();
+      
+      // Afficher la confirmation
+      showSuccessMessage('Sortie enregistrée avec succès!');
+      
+      // Réinitialiser le formulaire et recharger les données
+      document.getElementById('exitForm').reset();
+      document.getElementById('exitDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('quantity').value = 1;
+      
+      await loadSupplyDetails();
+      await loadRecentExits();
+
+      // Rediriger après 2 secondes
+      setTimeout(() => {
+        window.location.href = 'view.html?id=' + supplyId;
+      }, 2000);
+
+    } catch (error) {
+      console.error('Erreur:', error);
+      showError(error.message);
+    }
+  }
+
+  // Utilitaires
+  function incrementQuantity() {
+    const input = document.getElementById('quantity');
+    const max = parseInt(input.max);
+    const current = parseInt(input.value) || 0;
+    if (current < max) {
+      input.value = current + 1;
+    }
+  }
+
+  function decrementQuantity() {
+    const input = document.getElementById('quantity');
+    const current = parseInt(input.value) || 1;
+    if (current > 1) {
+      input.value = current - 1;
+    }
+  }
+
+  function showError(message) {
+    const alert = document.getElementById('alert');
+    alert.textContent = message;
+    alert.classList.remove('d-none');
+    window.scrollTo(0, 0);
+  }
+
+  function showStockAlert(message) {
+    const alert = document.getElementById('stockAlert');
+    document.getElementById('stockAlertMsg').textContent = message;
+    alert.classList.remove('d-none');
+  }
+
+  function hideStockAlert() {
+    document.getElementById('stockAlert').classList.add('d-none');
+  }
+
+  function showSuccessMessage(message) {
+    const msg = document.getElementById('successMessage');
+    msg.textContent = message;
+    msg.style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+
+  function hideSuccessMessage() {
+    document.getElementById('successMessage').style.display = 'none';
+  }
+
+  // Mises à jour de l'interface utilisateur
+  async function updateUserMenu() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_BASE}/user/me.php`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const user = await response.json();
+        document.getElementById('userMenuText').textContent = user.prenom + ' ' + user.nom;
+        document.getElementById('profileLink').onclick = (e) => {
+          e.preventDefault();
+          window.location.href = '#';
+        };
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  }
+
+  // Déconnexion
+  document.addEventListener('DOMContentLoaded', () => {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        window.location.href = '../../index.html';
+      });
+    }
+  });
+
+  // Validation en temps réel
+  document.getElementById('quantity').addEventListener('change', (e) => {
+    const quantity = parseInt(e.target.value) || 0;
+    if (quantity > currentSupply.quantite_stock) {
+      e.target.value = currentSupply.quantite_stock;
+      showError('Quantité réduite au stock disponible');
+    }
+  });
+
+  // Initialiser l'application
+  init();
+</script>
+</body>
+</html>
