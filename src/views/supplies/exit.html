@@ -143,7 +143,7 @@
             <span id="userMenuText">Chargement…</span>
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="#" id="profileLink">Mon profil</a></li>
+            <li><a class="dropdown-item" href="../profile.html" id="profileLink">Mon profil</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Déconnexion</a></li>
           </ul>
@@ -565,10 +565,6 @@
         const data = await response.json();
         const user = data.user;
         document.getElementById('userMenuText').textContent = user.prenom + ' ' + user.nom;
-        document.getElementById('profileLink').onclick = (e) => {
-          e.preventDefault();
-          window.location.href = '#';
-        };
       }
     } catch (error) {
       console.error('Erreur:', error);

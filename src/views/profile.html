@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mon profil - PharmaStock</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/nav.css">
+  <style>
+    .avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #e9f2ff;
+      color: #2c7be5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .role-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .section-card {
+      border: 1px solid #e9ecef;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .section-card .card-header {
+      background: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      padding: .75rem 1.25rem;
+      font-weight: 600;
+      font-size: .95rem;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .65rem 0;
+      border-bottom: 1px solid #f1f3f5;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label {
+      font-size: .85rem;
+      color: #6c757d;
+      min-width: 140px;
+    }
+    .info-value {
+      font-size: .95rem;
+      color: #212529;
+      font-weight: 500;
+    }
+    .strength-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: #e9ecef;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .strength-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width .3s, background .3s;
+    }
+    .form-control:focus {
+      border-color: #2c7be5;
+      box-shadow: 0 0 0 .2rem rgba(44,123,229,.15);
+    }
+    .btn-primary { background: #2c7be5; border: none; }
+    .btn-primary:hover { background: #1a5edb; }
+  </style>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2c7be5">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fs-4 fw-bold text-primary" href="dashboard.html">PharmaStock</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto me-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Stock</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="supplies/list.html">Consulter stock</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Mouvement</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="supplies/entry.html">Entrées</a></li>
+            <li><a class="dropdown-item" href="supplies/exit.html">Sorties</a></li>
+            <li><a class="dropdown-item" href="supplies/history.html">Historique</a></li>
+          </ul>
+        </li>
+        <li class="nav-item"><a class="nav-link" href="#">Inventaire</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Administration</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#">Utilisateurs</a></li>
+            <li><a class="dropdown-item" href="#">Paramètres</a></li>
+          </ul>
+        </li>
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle active" href="#" data-bs-toggle="dropdown">
+            <span id="userMenuText">Chargement…</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item active" href="#">Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Déconnexion</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4 mb-5" style="max-width: 860px;">
+
+  <!-- En-tête -->
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="dashboard.html" class="btn btn-sm btn-outline-secondary">← Retour</a>
+    <div>
+      <h2 class="fw-bold mb-0">Mon profil</h2>
+      <p class="text-muted mb-0 small">Gérer mes informations et mon mot de passe</p>
+    </div>
+  </div>
+
+  <!-- Carte identité -->
+  <div class="section-card mb-4">
+    <div class="card-header">
+      <i class="fas fa-user me-2 text-primary"></i>Identité
+    </div>
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center gap-4 mb-4">
+        <div class="avatar" id="avatar-initials">??</div>
+        <div>
+          <h5 class="fw-bold mb-1" id="full-name">Chargement…</h5>
+          <div id="role-badge"></div>
+        </div>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Identifiant</span>
+        <span class="info-value font-monospace" id="info-login">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Nom</span>
+        <span class="info-value" id="info-nom">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Prénom</span>
+        <span class="info-value" id="info-prenom">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Rôle</span>
+        <span class="info-value" id="info-role">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Statut</span>
+        <span class="info-value" id="info-actif">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Dernière connexion</span>
+        <span class="info-value" id="info-connexion">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modifier nom / prénom -->
+  <div class="section-card mb-4">
+    <div class="card-header">
+      <i class="fas fa-pen me-2 text-primary"></i>Modifier mes informations
+    </div>
+    <div class="card-body p-4">
+      <div id="alert-profile" class="d-none mb-3"></div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Prénom</label>
+          <input type="text" class="form-control" id="edit-prenom" placeholder="Votre prénom">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Nom</label>
+          <input type="text" class="form-control" id="edit-nom" placeholder="Votre nom">
+        </div>
+      </div>
+      <div class="mt-3 d-flex gap-2">
+        <button class="btn btn-primary" id="btn-save-profile" onclick="saveProfile()">
+          <span id="spinner-profile" class="spinner-border spinner-border-sm me-1 d-none"></span>
+          Enregistrer
+        </button>
+        <button class="btn btn-outline-secondary" onclick="resetProfileForm()">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Changer mot de passe -->
+  <div class="section-card">
+    <div class="card-header">
+      <i class="fas fa-lock me-2 text-primary"></i>Changer mon mot de passe
+    </div>
+    <div class="card-body p-4">
+      <div id="alert-password" class="d-none mb-3"></div>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label small fw-semibold">Mot de passe actuel</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="ancien-mdp" placeholder="••••••••" autocomplete="current-password">
+            <button class="btn btn-outline-secondary" type="button" onclick="togglePwd('ancien-mdp', this)">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Nouveau mot de passe</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="nouveau-mdp" placeholder="Min. 8 caractères" autocomplete="new-password" oninput="checkStrength(this.value)">
+            <button class="btn btn-outline-secondary" type="button" onclick="togglePwd('nouveau-mdp', this)">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div class="strength-bar mt-1">
+            <div class="strength-fill" id="strength-fill" style="width:0%"></div>
+          </div>
+          <div class="small mt-1" id="strength-label" style="color:#6c757d"></div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Confirmer le nouveau mot de passe</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="confirm-mdp" placeholder="••••••••" autocomplete="new-password">
+            <button class="btn btn-outline-secondary" type="button" onclick="togglePwd('confirm-mdp', this)">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 d-flex gap-2">
+        <button class="btn btn-primary" id="btn-save-pwd" onclick="savePassword()">
+          <span id="spinner-pwd" class="spinner-border spinner-border-sm me-1 d-none"></span>
+          Mettre à jour
+        </button>
+        <button class="btn btn-outline-secondary" onclick="resetPasswordForm()">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/notifications.js"></script>
+<script>
+const API   = '../api';
+const token = localStorage.getItem('jwt');
+if (!token) window.location = '../index.html';
+
+const notify = new NotificationSystem({ position: 'top-right', duration: 4000 });
+
+let currentUser = null;
+
+// ── User menu ────────────────────────────────────────────────
+document.getElementById('logoutBtn').addEventListener('click', e => {
+  e.preventDefault();
+  localStorage.removeItem('jwt');
+  localStorage.removeItem('user');
+  window.location = '../index.html';
+});
+
+// ── Chargement du profil ─────────────────────────────────────
+async function loadProfile() {
+  try {
+    const res  = await fetch(`${API}/user/me.php`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (res.status === 401) { window.location = '../index.html'; return; }
+    const data = await res.json();
+    if (!res.ok) return;
+
+    currentUser = data.user;
+    renderProfile(currentUser);
+    prefillForm(currentUser);
+
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function renderProfile(u) {
+  const initials = (u.prenom?.[0] ?? '') + (u.nom?.[0] ?? '');
+  document.getElementById('avatar-initials').textContent = initials.toUpperCase();
+  document.getElementById('full-name').textContent       = u.prenom + ' ' + u.nom;
+  document.getElementById('userMenuText').textContent    = u.prenom + ' ' + u.nom;
+
+  document.getElementById('info-login').textContent    = u.login;
+  document.getElementById('info-nom').textContent      = u.nom;
+  document.getElementById('info-prenom').textContent   = u.prenom;
+  document.getElementById('info-role').textContent     = u.role;
+  document.getElementById('info-actif').innerHTML      = u.actif
+    ? '<span class="badge bg-success">Actif</span>'
+    : '<span class="badge bg-secondary">Inactif</span>';
+  document.getElementById('info-connexion').textContent = u.date_derniere_connexion
+    ? new Date(u.date_derniere_connexion).toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' })
+    : '—';
+
+  const roleColors = { ADMIN: 'bg-danger', UTILISATEUR: 'bg-primary', VISITEUR: 'bg-secondary' };
+  const roleClass  = roleColors[u.role] ?? 'bg-secondary';
+  document.getElementById('role-badge').innerHTML =
+    `<span class="badge role-badge ${roleClass}">${u.role}</span>`;
+}
+
+function prefillForm(u) {
+  document.getElementById('edit-prenom').value = u.prenom ?? '';
+  document.getElementById('edit-nom').value    = u.nom    ?? '';
+}
+
+// ── Enregistrer profil ───────────────────────────────────────
+async function saveProfile() {
+  const prenom = document.getElementById('edit-prenom').value.trim();
+  const nom    = document.getElementById('edit-nom').value.trim();
+
+  if (!prenom || !nom) {
+    showAlert('alert-profile', 'danger', 'Le prénom et le nom sont requis.');
+    return;
+  }
+  if (prenom.length < 2 || nom.length < 2) {
+    showAlert('alert-profile', 'danger', 'Minimum 2 caractères pour chaque champ.');
+    return;
+  }
+
+  setLoading('btn-save-profile', 'spinner-profile', true);
+  clearAlert('alert-profile');
+
+  try {
+    const res  = await fetch(`${API}/user/update-profile.php`, {
+      method:  'PUT',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ prenom, nom }),
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      currentUser = { ...currentUser, prenom, nom };
+      localStorage.setItem('user', JSON.stringify(currentUser));
+      renderProfile(currentUser);
+      notify.success('Profil mis à jour', 'Vos informations ont bien été enregistrées.');
+    } else {
+      showAlert('alert-profile', 'danger', data.error ?? 'Erreur lors de la mise à jour.');
+    }
+  } catch(e) {
+    showAlert('alert-profile', 'danger', 'Impossible de contacter le serveur.');
+  } finally {
+    setLoading('btn-save-profile', 'spinner-profile', false);
+  }
+}
+
+function resetProfileForm() {
+  if (currentUser) prefillForm(currentUser);
+  clearAlert('alert-profile');
+}
+
+// ── Changer mot de passe ─────────────────────────────────────
+async function savePassword() {
+  const ancien  = document.getElementById('ancien-mdp').value;
+  const nouveau = document.getElementById('nouveau-mdp').value;
+  const confirm = document.getElementById('confirm-mdp').value;
+
+  if (!ancien || !nouveau || !confirm) {
+    showAlert('alert-password', 'danger', 'Tous les champs sont requis.');
+    return;
+  }
+  if (nouveau.length < 8) {
+    showAlert('alert-password', 'danger', 'Le nouveau mot de passe doit faire au moins 8 caractères.');
+    return;
+  }
+  if (nouveau !== confirm) {
+    showAlert('alert-password', 'danger', 'Les deux nouveaux mots de passe ne correspondent pas.');
+    return;
+  }
+  if (ancien === nouveau) {
+    showAlert('alert-password', 'danger', 'Le nouveau mot de passe doit être différent de l\'ancien.');
+    return;
+  }
+
+  setLoading('btn-save-pwd', 'spinner-pwd', true);
+  clearAlert('alert-password');
+
+  try {
+    const res  = await fetch(`${API}/user/change-password.php`, {
+      method:  'PUT',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ ancien_mot_de_passe: ancien, nouveau_mot_de_passe: nouveau }),
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      notify.success('Mot de passe mis à jour', 'Votre mot de passe a bien été changé.');
+      resetPasswordForm();
+    } else {
+      showAlert('alert-password', 'danger', data.error ?? 'Erreur lors du changement.');
+    }
+  } catch(e) {
+    showAlert('alert-password', 'danger', 'Impossible de contacter le serveur.');
+  } finally {
+    setLoading('btn-save-pwd', 'spinner-pwd', false);
+  }
+}
+
+function resetPasswordForm() {
+  document.getElementById('ancien-mdp').value  = '';
+  document.getElementById('nouveau-mdp').value = '';
+  document.getElementById('confirm-mdp').value = '';
+  document.getElementById('strength-fill').style.width      = '0%';
+  document.getElementById('strength-label').textContent     = '';
+  clearAlert('alert-password');
+}
+
+// ── Force du mot de passe ────────────────────────────────────
+function checkStrength(val) {
+  let score = 0;
+  if (val.length >= 8)                    score++;
+  if (val.length >= 12)                   score++;
+  if (/[A-Z]/.test(val))                  score++;
+  if (/[0-9]/.test(val))                  score++;
+  if (/[^A-Za-z0-9]/.test(val))          score++;
+
+  const levels = [
+    { pct: '0%',   color: '#e9ecef', label: '' },
+    { pct: '25%',  color: '#dc3545', label: 'Très faible' },
+    { pct: '50%',  color: '#fd7e14', label: 'Faible' },
+    { pct: '75%',  color: '#ffc107', label: 'Moyen' },
+    { pct: '90%',  color: '#20c997', label: 'Fort' },
+    { pct: '100%', color: '#198754', label: 'Très fort' },
+  ];
+
+  const lvl = levels[Math.min(score, 5)];
+  document.getElementById('strength-fill').style.width      = lvl.pct;
+  document.getElementById('strength-fill').style.background = lvl.color;
+  document.getElementById('strength-label').textContent     = lvl.label;
+  document.getElementById('strength-label').style.color     = lvl.color;
+}
+
+// ── Afficher/masquer mot de passe ────────────────────────────
+function togglePwd(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const icon  = btn.querySelector('i');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.classList.replace('fa-eye', 'fa-eye-slash');
+  } else {
+    input.type = 'password';
+    icon.classList.replace('fa-eye-slash', 'fa-eye');
+  }
+}
+
+// ── Utilitaires ──────────────────────────────────────────────
+function showAlert(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = `alert alert-${type}`;
+  el.textContent = msg;
+}
+
+function clearAlert(id) {
+  const el = document.getElementById(id);
+  el.className = 'd-none';
+  el.textContent = '';
+}
+
+function setLoading(btnId, spinnerId, on) {
+  document.getElementById(btnId).disabled                = on;
+  document.getElementById(spinnerId).classList.toggle('d-none', !on);
+}
+
+// ── Démarrage ────────────────────────────────────────────────
+loadProfile();
+</script>
+</body>
+</html>

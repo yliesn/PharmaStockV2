@@ -76,7 +76,7 @@
             <span id="userMenuText">Chargement…</span>
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="#" id="profileLink">Mon profil</a></li>
+            <li><a class="dropdown-item" href="profile.html" id="profileLink">Mon profil</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Déconnexion</a></li>
           </ul>
@@ -192,7 +192,6 @@
 
   // Elements pour les actions
   const logoutBtn = document.getElementById('logoutBtn');
-  const profileLink = document.getElementById('profileLink');
   const userMenuText = document.getElementById('userMenuText');
 
   // Logout
@@ -201,13 +200,6 @@
     localStorage.removeItem('jwt');
     localStorage.removeItem('user');
     window.location = '../index.html';
-  });
-
-  // Profile (à adapter selon votre besoin)
-  profileLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    // À faire : rediriger vers page profil ou afficher modal
-    alert('Profil utilisateur - à implémenter');
   });
 
   // Pré-rempli depuis le localStorage (évite un flash)
