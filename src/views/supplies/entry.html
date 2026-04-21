@@ -78,6 +78,27 @@
     .hidden-section {
       display: none !important;
     }
+    #barcode-scanner {
+      width: 100%;
+      height: 400px;
+      border: 2px solid #0d6efd;
+      border-radius: 6px;
+      background: #000;
+      position: relative;
+      z-index: 1;
+    }
+    #barcode-scanner video {
+      width: 100%;
+      height: 100%;
+    }
+    .supplySelect {
+      position: relative;
+      z-index: 10;
+    }
+    .scanner-toggle-btn {
+      margin-top: 1rem;
+      width: 100%;
+    }
   </style>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#2c7be5">
@@ -155,7 +176,7 @@
   <div class="row mb-4">
     <div class="col-md-8">
       <div class="d-flex align-items-center gap-3">
-        <a href="list.html" class="btn btn-sm btn-outline-secondary">← Retour</a>
+        <a href="entry.html" class="btn btn-sm btn-outline-secondary">← Retour</a>
         <div>
           <h2 class="fw-bold mb-1">
             <i class="fas fa-arrow-left text-success"></i> Entrée de Stock
@@ -174,14 +195,20 @@
           <h5 class="card-title fw-bold mb-4">
             <i class="fas fa-box"></i> Sélectionner une fourniture
           </h5>
-          <div class="mb-3">
-                <label for="barcode-scanner" class="form-label">Scanner un code-barres</label>
-                <div id="barcode-scanner" ></div>
+          <div class="mb-3" id="scannerSection" style="display: none;">
+                <label class="form-label">Scanner un code-barres</label>
+                <button type="button" class="btn btn-sm btn-outline-danger scanner-toggle-btn" id="stopScannerBtn" onclick="stopScanner()">
+                  <i class="fas fa-times"></i> Arrêter le scanner
+                </button>
+                <div id="barcode-scanner"></div>
                 <div id="scan-result" class="mt-3"></div>
           </div>
+          <button type="button" class="btn btn-primary w-100 mb-3" id="startScannerBtn" onclick="startScannerMode()">
+            <i class="fas fa-barcode"></i> Activer le scanner
+          </button>
           <div class="form-group">
-            <label for="supplySelect" class="form-label">Fourniture <span class="text-danger">*</span></label>
-            <select class="form-select form-select-lg" id="supplySelect" onchange="onSupplyChange()">
+            <label for="supplySelect" class="form-label">Ou sélectionner une fourniture <span class="text-danger">*</span></label>
+            <select class="form-select form-select-lg supplySelect" id="supplySelect" onchange="onSupplyChange()">
               <option value="">-- Choisir une fourniture --</option>
             </select>
           </div>
@@ -561,50 +588,148 @@
   init();
 </script>
 <script>
-    window.addEventListener('DOMContentLoaded', function() {
-    var resultNode = document.getElementById('scan-result');
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(function(stream) {
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.querySelector('#barcode-scanner'),
-                    constraints: {
-                        facingMode: "environment"
-                    }
-                },
-                decoder: {
-                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "upc_reader", "upc_e_reader"]
-                },
-                locate: true
-            }, function(err) {
-                if (err) {
-                    resultNode.innerHTML = '<div class="alert alert-danger">Erreur caméra : ' + err + '</div>';
-                    return;
-                }
-                Quagga.start();
-            });
-        })
-        .catch(function(err) {
-            document.getElementById('scan-result').innerHTML = '<div class="alert alert-danger">Accès à la caméra refusé ou indisponible : ' + err.message + '</div>';
-        });
-    Quagga.onDetected(function(data) {
-        var code = data.codeResult.code;
-        var supplySelect = document.querySelector('select[name="supplySelect"]');
-        for (var i = 0; i < supplySelect.options.length; i++) {
-            if (supplySelect.options[i].text.includes(code)) {
-                var supplyId = supplySelect.options[i].value;
-                window.location.href = `entry.php?id=${supplyId}`;
-                break;
-            }
+  let barcodeScanned = false;
+  let quaggaInitialized = false;
+  let scannerActive = false;
+
+  function startScannerMode() {
+    document.getElementById('scannerSection').style.display = 'block';
+    document.getElementById('startScannerBtn').style.display = 'none';
+    document.getElementById('supplySelect').disabled = true;
+    scannerActive = true;
+    initializeBarcodeScanner();
+  }
+
+  function stopScanner() {
+    if (quaggaInitialized) {
+      try {
+        Quagga.stop();
+      } catch (e) {
+        console.log('Quagga arrêté');
+      }
+    }
+    document.getElementById('scannerSection').style.display = 'none';
+    document.getElementById('startScannerBtn').style.display = 'block';
+    document.getElementById('supplySelect').disabled = false;
+    document.getElementById('supplySelect').focus();
+    scannerActive = false;
+    barcodeScanned = false;
+    quaggaInitialized = false;
+  }
+
+  function initializeBarcodeScanner() {
+    const scannerContainer = document.getElementById('barcode-scanner');
+    const resultNode = document.getElementById('scan-result');
+
+    if (!scannerContainer || !scannerActive) return;
+
+    // Vérifier la disponibilité de la caméra
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(function (stream) {
+        // Arrêter le stream immédiatement
+        stream.getTracks().forEach(track => track.stop());
+
+        // Vérifier si Quagga est disponible
+        if (typeof Quagga === 'undefined') {
+          resultNode.innerHTML = '<div class="alert alert-danger">Quagga n\'est pas chargé</div>';
+          return;
         }
-        // Redémarrer le scanner après un court délai
-        setTimeout(function() {
-            Quagga.start();
-        }, 1000);
+
+        // Initialiser Quagga
+        Quagga.init({
+          inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: scannerContainer,
+            constraints: {
+              facingMode: "environment",
+              width: { min: 640 },
+              height: { min: 480 }
+            }
+          },
+          locator: {
+            patchSize: "medium",
+            halfSample: true
+          },
+          numOfWorkers: navigator.hardwareConcurrency ? navigator.hardwareConcurrency : 4,
+          decoder: {
+            readers: [
+              "code_128_reader",
+              "ean_reader",
+              "ean_8_reader",
+              "code_39_reader",
+              "upc_reader",
+              "upc_e_reader",
+              "codabar_reader"
+            ]
+          },
+          locate: true
+        }, function (err) {
+          if (err) {
+            console.error('Erreur Quagga:', err);
+            resultNode.innerHTML = '<div class="alert alert-danger"><strong>Erreur:</strong> ' + err.message + '</div>';
+            return;
+          }
+          quaggaInitialized = true;
+          Quagga.start();
+          resultNode.innerHTML = '<div class="alert alert-info">Scanner prêt - Scannez un code-barres</div>';
+        });
+      })
+      .catch(function (err) {
+        console.error('Erreur accès caméra:', err);
+        resultNode.innerHTML = '<div class="alert alert-danger"><strong>Erreur caméra:</strong> ' + err.message + '</div>';
+      });
+
+    // Gérer la détection de code-barres
+    Quagga.onDetected(async function (data) {
+      if (barcodeScanned) return; // Éviter les détections multiples
+
+      const code = data.codeResult.code;
+      console.log('Code détecté:', code);
+
+      barcodeScanned = true;
+      Quagga.stop();
+
+      resultNode.innerHTML = '<div class="alert alert-info">Recherche du produit...</div>';
+
+      try {
+        // Chercher le produit par référence/code-barres
+        const token = localStorage.getItem('jwt');
+        const response = await fetch(`${API_BASE}/supplies/list.php`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) throw new Error('Erreur lors du chargement');
+
+        const listData = await response.json();
+        let foundSupply = null;
+
+        // Chercher dans la liste des fournitures
+        if (listData.data && Array.isArray(listData.data)) {
+          foundSupply = listData.data.find(supply =>
+            supply.reference === code || supply.designation.includes(code)
+          );
+        }
+
+        if (foundSupply) {
+          resultNode.innerHTML = '<div class="alert alert-success">Produit trouvé: ' + foundSupply.designation + '</div>';
+          // Redirection vers la page avec l'id du produit
+          setTimeout(() => {
+            window.location.href = `entry.html?id=${foundSupply.id}`;
+          }, 500);
+        } else {
+          resultNode.innerHTML = '<div class="alert alert-warning">Code-barres <strong>' + code + '</strong> non trouvé. Réessayez.</div>';
+          barcodeScanned = false;
+          Quagga.start();
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+        resultNode.innerHTML = '<div class="alert alert-danger">Erreur: ' + error.message + '</div>';
+        barcodeScanned = false;
+        Quagga.start();
+      }
     });
-});
+  }
 </script>
 </body>
 </html>
