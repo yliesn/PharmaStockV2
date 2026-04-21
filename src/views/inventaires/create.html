@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Créer un Inventaire - PharmaStock</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../assets/css/nav.css">
+  <style>
+    .create-card {
+      border-left: 4px solid #0d6efd;
+      transition: transform 0.2s;
+    }
+    .create-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-label {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+    .btn-create {
+      padding: 0.75rem 2rem;
+      font-weight: 600;
+    }
+  </style>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2c7be5">
+<link rel="apple-touch-icon" href="/assets/img/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fs-4 fw-bold text-primary" href="../../views/dashboard.html">PharmaStock</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto me-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="../../views/supplies/list.html" id="stockDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Stock
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="stockDropdown">
+            <li><a class="dropdown-item" href="../../views/supplies/list.html">Consulter stock</a></li>
+            <li><a class="dropdown-item" href="../../views/supplies/list.html" onclick="openCreateModal()">Ajouter produit</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="mouvementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Mouvement
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="mouvementDropdown">
+            <li><a class="dropdown-item" href="../../views/supplies/entry.html">Entrées</a></li>
+            <li><a class="dropdown-item" href="../../views/supplies/exit.html">Sorties</a></li>
+            <li><a class="dropdown-item" href="../../views/supplies/history.html">Historique</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link active" href="history.html">Inventaire</a>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Administration
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+            <li><a class="dropdown-item" href="../../views/admin/users.html">Utilisateurs</a></li>
+            <li><a class="dropdown-item" href="#">Paramètres</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span id="userMenuText">Chargement…</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="../../views/profile.html" id="profileLink">Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Déconnexion</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid mt-5">
+
+  <!-- En-tête -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <div class="d-flex align-items-center gap-3">
+        <a href="history.html" class="btn btn-sm btn-outline-secondary">← Retour</a>
+        <div>
+          <h2 class="fw-bold mb-1">
+            <i class="fas fa-plus-circle text-primary"></i> Créer un Inventaire
+          </h2>
+          <p class="text-muted mb-0">Initier une nouvelle session d'inventaire</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire de création -->
+  <div class="row mb-4">
+    <div class="col-lg-6 mx-auto">
+      <div class="card create-card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title fw-bold mb-4">
+            <i class="fas fa-list-check"></i> Informations de l'inventaire
+          </h5>
+
+          <form id="createInventoryForm">
+            <div class="form-group">
+              <label for="date" class="form-label">Date</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="date"
+                readonly
+              >
+              <small class="form-text text-muted">Date actuelle</small>
+            </div>
+
+            <div class="form-group">
+              <label for="user" class="form-label">Utilisateur</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="user"
+                readonly
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="commentaire" class="form-label">Commentaire (optionnel)</label>
+              <textarea 
+                class="form-control" 
+                id="commentaire"
+                rows="3"
+                placeholder="Ajouter un commentaire sur cet inventaire..."
+              ></textarea>
+              <small class="form-text text-muted">Ex: Inventaire complet de la pharmacie</small>
+            </div>
+
+            <div class="alert alert-info mt-4">
+              <i class="fas fa-info-circle"></i> 
+              <strong>Attention:</strong> Une fois créé, l'inventaire chargera la liste complète de tous les produits.
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+              <a href="history.html" class="btn btn-outline-secondary btn-create">Annuler</a>
+              <button type="submit" class="btn btn-primary btn-create">
+                <i class="fas fa-check"></i> Créer et commencer
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/js/notifications.js"></script>
+<script>
+  const notify = new NotificationSystem({ position: 'top-right', duration: 5000 });
+  const API_BASE = '/api';
+
+  // Initialisation
+  async function init() {
+    const token = localStorage.getItem('jwt');
+    if (!token) {
+      window.location.href = '../../index.html';
+      return;
+    }
+
+    // Afficher la date d'aujourd'hui
+    const today = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    document.getElementById('date').value = today.toLocaleDateString('fr-FR', options);
+
+    updateUserMenu();
+  }
+
+  // Mises à jour de l'interface utilisateur
+  async function updateUserMenu() {
+    const token = localStorage.getItem('jwt');
+    if (!token) return;
+
+    const cached = JSON.parse(localStorage.getItem('user') || '{}');
+    if (cached.prenom) {
+      document.getElementById('userMenuText').textContent = cached.prenom + ' ' + cached.nom;
+      document.getElementById('user').value = cached.prenom + ' ' + cached.nom;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/user/me.php`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const user = data.user;
+        document.getElementById('userMenuText').textContent = user.prenom + ' ' + user.nom;
+        document.getElementById('user').value = user.prenom + ' ' + user.nom;
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  }
+
+  // Soumission du formulaire
+  document.getElementById('createInventoryForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const commentaire = document.getElementById('commentaire').value;
+    const token = localStorage.getItem('jwt');
+    if (!token) window.location = '../index.html';
+
+    try {
+      const response = await fetch(`${API_BASE}/inventaires/create.php`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          commentaire: commentaire || null,
+          utilisateur_id: JSON.parse(localStorage.getItem('user')).id
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erreur lors de la création');
+      }
+
+      const result = await response.json();
+      notify.success('Succès', 'Inventaire créé avec succès!');
+      
+      // Redirection vers la page de saisie
+      setTimeout(() => {
+        window.location.href = `session.html?id=${result.inventaire_id}`;
+      }, 500);
+
+    } catch (error) {
+      console.error('Erreur:', error);
+      notify.error('Erreur', error.message);
+    }
+  });
+
+  // Déconnexion
+  document.addEventListener('DOMContentLoaded', () => {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('jwt');
+        window.location.href = '../../index.html';
+      });
+    }
+  });
+
+  init();
+</script>
+</body>
+</html>

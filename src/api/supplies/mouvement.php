@@ -152,6 +152,20 @@ try {
         $payload['sub'], // ID de l'utilisateur depuis le token
     ]);
 
+    $motif_normalized = strtolower(trim($motif));
+
+    if (
+        str_contains($motif_normalized, 'commande') &&
+        (str_contains($motif_normalized, 'recu') || str_contains($motif_normalized, 'reçu'))
+    ) {
+        $updateCmd = $pdo->prepare("
+            UPDATE FOURNITURE 
+            SET commande_en_cours = 0 
+            WHERE id = ?
+        ");
+        $updateCmd->execute([$supply_id]);
+    }
+
     $mouvement_id = $pdo->lastInsertId();
 
     // Récupère la fourniture mise à jour

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Historique Inventaires - PharmaStock</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../assets/css/nav.css">
+  <style>
+    .history-card {
+      border-left: 4px solid #20c997;
+      transition: all 0.3s ease;
+    }
+    .history-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(32, 201, 151, 0.15);
+    }
+    .inventory-item {
+      padding: 1.5rem;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      border-left: 4px solid #e9ecef;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .inventory-item:hover {
+      border-left-color: #0d6efd;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .inventory-item.completed {
+      border-left-color: #28a745;
+      background: #f8fff9;
+    }
+    .inventory-item.pending {
+      border-left-color: #ffc107;
+      background: #fffbf5;
+    }
+    .inventory-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+    .inventory-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.25rem;
+    }
+    .inventory-date {
+      font-size: 0.9rem;
+      color: #6c757d;
+    }
+    .inventory-user {
+      font-size: 0.85rem;
+      color: #495057;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .status-completed {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .stat-line {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+    .stat-mini {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+    .stat-value {
+      font-weight: 600;
+      color: #333;
+    }
+    .stat-label {
+      color: #6c757d;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+    .empty-state-icon {
+      font-size: 3rem;
+      color: #e9ecef;
+      margin-bottom: 1rem;
+    }
+    .btn-create {
+      padding: 0.75rem 2rem;
+      font-weight: 600;
+    }
+  </style>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2c7be5">
+<link rel="apple-touch-icon" href="/assets/img/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fs-4 fw-bold text-primary" href="../../views/dashboard.html">PharmaStock</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto me-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="../../views/supplies/list.html" id="stockDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Stock
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="stockDropdown">
+            <li><a class="dropdown-item" href="../../views/supplies/list.html">Consulter stock</a></li>
+            <li><a class="dropdown-item" href="../../views/supplies/list.html" onclick="openCreateModal()">Ajouter produit</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="mouvementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Mouvement
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="mouvementDropdown">
+            <li><a class="dropdown-item" href="../../views/supplies/entry.html">Entrées</a></li>
+            <li><a class="dropdown-item" href="../../views/supplies/exit.html">Sorties</a></li>
+            <li><a class="dropdown-item" href="../../views/supplies/history.html">Historique</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link active" href="#">Inventaire</a>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Administration
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+            <li><a class="dropdown-item" href="../../views/admin/users.html">Utilisateurs</a></li>
+            <li><a class="dropdown-item" href="#">Paramètres</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span id="userMenuText">Chargement…</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="../../views/profile.html" id="profileLink">Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Déconnexion</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid mt-5">
+
+  <!-- En-tête -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <div class="d-flex align-items-center gap-3">
+        <a href="../../views/dashboard.html" class="btn btn-sm btn-outline-secondary">← Tableau de bord</a>
+        <div>
+          <h2 class="fw-bold mb-1">
+            <i class="fas fa-history text-success"></i> Historique des Inventaires
+          </h2>
+          <p class="text-muted mb-0">Liste de tous les inventaires réalisés</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="create.html" class="btn btn-primary btn-create">
+        <i class="fas fa-plus-circle"></i> Créer un Inventaire
+      </a>
+    </div>
+  </div>
+
+  <!-- Contenu -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card history-card shadow-sm">
+        <div class="card-body">
+          <div id="inventoryList">
+            <!-- Rempli par JavaScript -->
+          </div>
+
+          <!-- État vide -->
+          <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">
+              <i class="fas fa-inbox"></i>
+            </div>
+            <h5>Aucun inventaire pour le moment</h5>
+            <p class="text-muted">Créez votre premier inventaire pour commencer.</p>
+            <a href="create.html" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Créer un Inventaire
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/js/notifications.js"></script>
+<script>
+  const notify = new NotificationSystem({ position: 'top-right', duration: 5000 });
+  const API_BASE = '/api';
+
+  // Initialisation
+  async function init() {
+    const token = localStorage.getItem('jwt');
+    if (!token) {
+      window.location.href = '../../index.html';
+      return;
+    }
+
+    await loadInventories();
+    updateUserMenu();
+  }
+
+  // Charger les inventaires
+  async function loadInventories() {
+    try {
+      const token = localStorage.getItem('jwt');
+      const response = await fetch(`${API_BASE}/inventaires/list.php`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) throw new Error('Erreur lors du chargement');
+
+      const data = await response.json();
+      
+      if (data.inventaires.length === 0) {
+        document.getElementById('emptyState').style.display = 'block';
+        document.getElementById('inventoryList').innerHTML = '';
+      } else {
+        document.getElementById('emptyState').style.display = 'none';
+        displayInventories(data.inventaires);
+      }
+
+    } catch (error) {
+      console.error('Erreur:', error);
+      notify.error('Erreur', error.message);
+    }
+  }
+
+  // Afficher les inventaires
+  function displayInventories(inventories) {
+    const listContainer = document.getElementById('inventoryList');
+    listContainer.innerHTML = '';
+
+    inventories.forEach(inv => {
+      const date = new Date(inv.date_inventaire);
+      const formattedDate = date.toLocaleDateString('fr-FR', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const statusClass = inv.corrigee ? 'completed' : 'pending';
+      const statusText = inv.corrigee ? 'Validé ✓' : 'En cours';
+      const statusBadgeClass = inv.corrigee ? 'status-completed' : 'status-pending';
+
+      const item = document.createElement('div');
+      item.className = `inventory-item ${statusClass}`;
+      item.onclick = () => {
+        if (inv.corrigee) {
+          window.location.href = `summary.html?id=${inv.id}`;
+        } else {
+          window.location.href = `session.html?id=${inv.id}`;
+        }
+      };
+
+      item.innerHTML = `
+        <div class="inventory-header">
+          <div>
+            <div class="inventory-title">Inventaire du ${formattedDate}</div>
+            <div class="inventory-date">Réalisé par: <strong>${inv.prenom} ${inv.nom}</strong></div>
+            ${inv.commentaire ? `<div class="inventory-user"><i class="fas fa-comment"></i> ${inv.commentaire}</div>` : ''}
+          </div>
+          <span class="status-badge ${statusBadgeClass}">${statusText}</span>
+        </div>
+
+        <div class="stat-line">
+          <div class="stat-mini">
+            <span class="stat-label"><i class="fas fa-box"></i> Produits:</span>
+            <span class="stat-value">${inv.total_lignes || 0}</span>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-label"><i class="fas fa-exclamation-triangle"></i> Écarts:</span>
+            <span class="stat-value">${inv.lignes_ecart || 0}</span>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-label"><i class="fas fa-arrow-up"></i> Surplus:</span>
+            <span class="stat-value">${inv.surplus_total || 0}</span>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-label"><i class="fas fa-arrow-down"></i> Manques:</span>
+            <span class="stat-value">${inv.manques_total || 0}</span>
+          </div>
+        </div>
+      `;
+
+      listContainer.appendChild(item);
+    });
+  }
+
+  // Mises à jour de l'interface utilisateur
+  async function updateUserMenu() {
+    const token = localStorage.getItem('jwt');
+    if (!token) return;
+
+    const cached = JSON.parse(localStorage.getItem('user') || '{}');
+    if (cached.prenom) {
+      document.getElementById('userMenuText').textContent = cached.prenom + ' ' + cached.nom;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/user/me.php`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const user = data.user;
+        document.getElementById('userMenuText').textContent = user.prenom + ' ' + user.nom;
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  }
+
+  // Déconnexion
+  document.addEventListener('DOMContentLoaded', () => {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('jwt');
+        window.location.href = '../../index.html';
+      });
+    }
+  });
+
+  init();
+</script>
+</body>
+</html>
