@@ -79,6 +79,10 @@
       display: none !important;
     }
   </style>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2c7be5">
+<link rel="apple-touch-icon" href="/assets/img/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
 </head>
 <body>
 
@@ -110,7 +114,7 @@
           <ul class="dropdown-menu" aria-labelledby="mouvementDropdown">
             <li><a class="dropdown-item active" href="#">Entrées</a></li>
             <li><a class="dropdown-item" href="exit.html">Sorties</a></li>
-            <li><a class="dropdown-item" href="#">Historique</a></li>
+            <li><a class="dropdown-item" href="history.html">Historique</a></li>
           </ul>
         </li>
 
@@ -123,8 +127,7 @@
             Administration
           </a>
           <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-            <li><a class="dropdown-item" href="#">Utilisateurs</a></li>
-            <li><a class="dropdown-item" href="#">Catégories</a></li>
+            <li><a class="dropdown-item" href="../admin/users.html">Utilisateurs</a></li>
             <li><a class="dropdown-item" href="#">Paramètres</a></li>
           </ul>
         </li>
@@ -136,7 +139,7 @@
             <span id="userMenuText">Chargement…</span>
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="#" id="profileLink">Mon profil</a></li>
+            <li><a class="dropdown-item" href="../profile.html" id="profileLink">Mon profil</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Déconnexion</a></li>
           </ul>
@@ -536,10 +539,6 @@
         const data = await response.json();
         const user = data.user;
         document.getElementById('userMenuText').textContent = user.prenom + ' ' + user.nom;
-        document.getElementById('profileLink').onclick = (e) => {
-          e.preventDefault();
-          window.location.href = '#';
-        };
       }
     } catch (error) {
       console.error('Erreur:', error);

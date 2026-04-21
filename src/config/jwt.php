@@ -1,6 +1,6 @@
 <?php
 
-define('JWT_SECRET', 'CHANGE_THIS_SECRET_KEY_MIN_32_CHARS!!');
+define('JWT_SECRET', getenv('JWT_SECRET'));
 define('JWT_EXPIRY', 3600); // 1 heure
 
 function base64url_encode(string $data): string {

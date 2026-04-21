@@ -31,6 +31,14 @@ if (!$user['actif']) {
     json_response(['error' => 'Compte désactivé'], 403);
 }
 
+// Mise à jour de la dernière connexion
+$updateStmt = $pdo->prepare('
+    UPDATE UTILISATEUR 
+    SET date_derniere_connexion = NOW() 
+    WHERE id = ?
+');
+$updateStmt->execute([$user['id']]);
+
 $token = jwt_create([
     'sub'   => $user['id'],
     'login' => $user['login'],
