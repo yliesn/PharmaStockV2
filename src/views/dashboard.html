@@ -328,6 +328,7 @@ function renderCommandesEnCours(supplies) {
         <div class="d-flex align-items-center gap-2">
           ${badge}
           <button class="btn btn-sm btn-outline-secondary py-0" onclick="cancelOrder(${s.id})" title="Marquer comme reçue">✓</button>
+          <button class="btn btn-sm btn-success py-0" onclick="mvtStock(${s.id})" title="Marquer comme reçue"><i class="fas fa-arrow-left"></i></button>
         </div>
       </li>`;
   }).join('');
@@ -418,6 +419,10 @@ async function Order(supplyId) {
   } catch (e) {
     console.error(e);
   }
+}
+
+async function mvtStock(supplyId) {
+  location.href = `supplies/entry.html?id=${supplyId}`;
 }
 
 loadDashboard();
