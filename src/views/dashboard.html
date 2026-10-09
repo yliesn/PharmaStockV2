@@ -16,49 +16,8 @@
 <div class="app-layout">
 
   <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <a class="sidebar-brand" href="dashboard.html">
-      <i class="fas fa-pills"></i> PharmaStock
-    </a>
-    <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-section-label">Principal</div>
-        <a class="sidebar-link active" href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Stock</div>
-        <a class="sidebar-link" href="supplies/list.html"><i class="fas fa-boxes"></i> Produits</a>
-        <a class="sidebar-link" href="supplies/entry.html"><i class="fas fa-arrow-circle-down"></i> Entrées</a>
-        <a class="sidebar-link" href="supplies/exit.html"><i class="fas fa-arrow-circle-up"></i> Sorties</a>
-        <a class="sidebar-link" href="supplies/history.html"><i class="fas fa-list-alt"></i> Historique mvt.</a>
-        <a class="sidebar-link" href="supplies/generate-barcode.html"><i class="fas fa-barcode"></i> Codes-barres</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Inventaire</div>
-        <a class="sidebar-link" href="inventaires/history.html"><i class="fas fa-clipboard-list"></i> Historique inv.</a>
-        <a class="sidebar-link" href="inventaires/create.html"><i class="fas fa-plus-circle"></i> Nouvel inventaire</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Administration</div>
-        <a class="sidebar-link" href="admin/users.html"><i class="fas fa-users"></i> Utilisateurs</a>
-        <a class="sidebar-link" href="profile.html"><i class="fas fa-user-circle"></i> Mon profil</a>
-      </div>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="sidebar-user">
-        <div class="sidebar-avatar" id="sidebarAvatar">?</div>
-        <div class="sidebar-user-info">
-          <div class="sidebar-user-name" id="userMenuText">Chargement…</div>
-          <div class="sidebar-user-role" id="sidebarRole"></div>
-        </div>
-      </div>
-      <a href="#" class="sidebar-logout" id="logoutBtn">
-        <i class="fas fa-sign-out-alt"></i> Déconnexion
-      </a>
-    </div>
-  </aside>
-
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar" id="sidebar"></aside>
+  <script src="../assets/js/sidebar.js"></script>
 
   <!-- MAIN -->
   <div class="main-content">
@@ -147,28 +106,12 @@
 </div><!-- /.app-layout -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../assets/js/sidebar.js"></script>
 <script>
   const API = '../api';
   const token = localStorage.getItem('jwt');
   if (!token) window.location = '../index.html';
 
-  // Logout géré par sidebar.js — marquer comme managed pour éviter doublon
-  document.getElementById('logoutBtn').dataset.managed = '1';
-  document.getElementById('logoutBtn').addEventListener('click', (e) => {
-    e.preventDefault();
-    localStorage.removeItem('jwt');
-    localStorage.removeItem('user');
-    window.location = '../index.html';
-  });
-
-  // Pré-rempli depuis le localStorage
-  const cached = JSON.parse(localStorage.getItem('user') || '{}');
-  if (cached.prenom) {
-    document.getElementById('userMenuText').textContent = cached.prenom + ' ' + cached.nom;
-    document.getElementById('sidebarAvatar').textContent = ((cached.prenom[0]||'')+(cached.nom[0]||'')).toUpperCase();
-    document.getElementById('sidebarRole').textContent = cached.role || '';
-  }
+  // Menu et déconnexion gérés par sidebar.js (pré-rempli depuis le localStorage)
 
   // Vérifie le token côté serveur
   (async () => {
@@ -179,9 +122,7 @@
       const data = await res.json();
       if (!res.ok) { localStorage.removeItem('jwt'); window.location = '../index.html'; return; }
       const u = data.user;
-      document.getElementById('userMenuText').textContent = u.prenom + ' ' + u.nom;
-      document.getElementById('sidebarAvatar').textContent = ((u.prenom[0]||'')+(u.nom[0]||'')).toUpperCase();
-      document.getElementById('sidebarRole').textContent = u.role || '';
+      Sidebar.setUser(u);
       document.getElementById('user-info').innerHTML = `
         <dt class="col-5">Nom</dt>        <dd class="col-7">${esc(u.nom)}</dd>
         <dt class="col-5">Prénom</dt>     <dd class="col-7">${esc(u.prenom)}</dd>

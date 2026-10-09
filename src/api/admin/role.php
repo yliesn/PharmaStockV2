@@ -33,22 +33,19 @@ if (!$user_id) {
 }
 
 // Vérifie que l'admin ne change pas son propre rôle
-if ($user_id === $payload['sub']) {
+if ($user_id === (int)$payload['sub']) {
     json_response(['error' => 'Vous ne pouvez pas modifier votre propre rôle'], 403);
 }
 
 $body = json_decode(file_get_contents('php://input'), true);
-$new_role = isset($body['role']) ? trim($body['role']) : '';
+$new_role = isset($body['role']) ? normalize_role((string)$body['role']) : '';
 
 if (!$new_role) {
     json_response(['error' => 'Le rôle est requis'], 400);
 }
 
-// Valide les rôles autorisés
-$allowed_roles = ['user', 'admin', 'moderator'];
-if (!in_array($new_role, $allowed_roles, true)) {
-    json_response(['error' => 'Rôle invalide. Rôles autorisés: ' . implode(', ', $allowed_roles)], 400);
-}
+// Valide les rôles autorisés (UTILISATEUR, ADMIN, VISITEUR)
+validate_role($new_role);
 
 $pdo = getDB();
 

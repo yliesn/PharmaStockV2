@@ -17,49 +17,8 @@
 <div class="app-layout">
 
   <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <a class="sidebar-brand" href="../dashboard.html">
-      <i class="fas fa-pills"></i> PharmaStock
-    </a>
-    <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-section-label">Principal</div>
-        <a class="sidebar-link" href="../dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Stock</div>
-        <a class="sidebar-link" href="../supplies/list.html"><i class="fas fa-boxes"></i> Produits</a>
-        <a class="sidebar-link" href="../supplies/entry.html"><i class="fas fa-arrow-circle-down"></i> Entrées</a>
-        <a class="sidebar-link" href="../supplies/exit.html"><i class="fas fa-arrow-circle-up"></i> Sorties</a>
-        <a class="sidebar-link" href="../supplies/history.html"><i class="fas fa-list-alt"></i> Historique mvt.</a>
-        <a class="sidebar-link" href="../supplies/generate-barcode.html"><i class="fas fa-barcode"></i> Codes-barres</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Inventaire</div>
-        <a class="sidebar-link" href="../inventaires/history.html"><i class="fas fa-clipboard-list"></i> Historique inv.</a>
-        <a class="sidebar-link" href="../inventaires/create.html"><i class="fas fa-plus-circle"></i> Nouvel inventaire</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Administration</div>
-        <a class="sidebar-link active" href="users.html"><i class="fas fa-users"></i> Utilisateurs</a>
-        <a class="sidebar-link" href="../profile.html"><i class="fas fa-user-circle"></i> Mon profil</a>
-      </div>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="sidebar-user">
-        <div class="sidebar-avatar" id="sidebarAvatar">?</div>
-        <div class="sidebar-user-info">
-          <div class="sidebar-user-name" id="userMenuText">Chargement…</div>
-          <div class="sidebar-user-role" id="sidebarRole"></div>
-        </div>
-      </div>
-      <a href="#" class="sidebar-logout" id="logoutBtn">
-        <i class="fas fa-sign-out-alt"></i> Déconnexion
-      </a>
-    </div>
-  </aside>
-
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar" id="sidebar"></aside>
+  <script src="../../assets/js/sidebar.js"></script>
 
   <!-- MAIN -->
   <div class="main-content">
@@ -268,7 +227,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../../assets/js/notifications.js"></script>
-<script src="../../assets/js/sidebar.js"></script>
 <script>
 const API   = '../../api';
 const token = localStorage.getItem('jwt');
@@ -278,9 +236,7 @@ const notify = new NotificationSystem({ position: 'top-right', duration: 4000 })
 
 const cached = JSON.parse(localStorage.getItem('user') || '{}');
 if (cached.prenom) {
-  document.getElementById('userMenuText').textContent  = cached.prenom + ' ' + cached.nom;
-  document.getElementById('sidebarAvatar').textContent = ((cached.prenom[0]||'')+(cached.nom[0]||'')).toUpperCase();
-  document.getElementById('sidebarRole').textContent   = cached.role || '';
+  Sidebar.setUser(cached);
 }
 
 (async () => {
@@ -288,9 +244,7 @@ if (cached.prenom) {
     const res  = await fetch(`${API}/user/me.php`, { headers: { 'Authorization': `Bearer ${token}` } });
     const data = await res.json();
     if (!res.ok || data.user.role !== 'ADMIN') { window.location = '../dashboard.html'; return; }
-    document.getElementById('userMenuText').textContent  = data.user.prenom + ' ' + data.user.nom;
-    document.getElementById('sidebarAvatar').textContent = ((data.user.prenom[0]||'')+(data.user.nom[0]||'')).toUpperCase();
-    document.getElementById('sidebarRole').textContent   = data.user.role || '';
+    Sidebar.setUser(data.user);
   } catch(e) { window.location = '../dashboard.html'; }
 })();
 

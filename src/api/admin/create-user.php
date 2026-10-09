@@ -31,7 +31,7 @@ $nom    = trim($body['nom'] ?? '');
 $prenom = trim($body['prenom'] ?? '');
 $login  = trim($body['login'] ?? '');
 $mdp    = $body['mot_de_passe'] ?? '';
-$role   = trim($body['role'] ?? 'user');
+$role   = normalize_role((string)($body['role'] ?? ROLE_UTILISATEUR));
 
 if (!$nom || !$prenom || !$login || !$mdp) {
     json_response(['error' => 'Tous les champs sont obligatoires (nom, prenom, login, mot_de_passe)'], 400);
@@ -54,10 +54,7 @@ if (strlen($mdp) < 8) {
 }
 
 // Valide les rôles autorisés
-$allowed_roles = ['UTILISATEUR', 'ADMIN', 'VISITEUR'];
-if (!in_array($role, $allowed_roles, true)) {
-    json_response(['error' => 'Rôle invalide. Rôles autorisés: ' . implode(', ', $allowed_roles)], 400);
-}
+validate_role($role);
 
 $pdo = getDB();
 

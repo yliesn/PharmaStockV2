@@ -13,6 +13,7 @@ services:
       APP_DB_NAME: ${DB_NAME}
       APP_DB_USER: ${DB_USER}
       APP_DB_PASS: ${DB_PASS}
+      JWT_SECRET: ${JWT_SECRET}
     expose:
       - "80"
     networks:

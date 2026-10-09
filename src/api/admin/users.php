@@ -86,7 +86,7 @@ if ($method === 'POST') {
     $prenom = trim($body['prenom']       ?? '');
     $login  = trim($body['login']        ?? '');
     $mdp    = $body['mot_de_passe']      ?? '';
-    $role   = strtoupper(trim($body['role'] ?? 'UTILISATEUR'));
+    $role   = normalize_role((string)($body['role'] ?? ROLE_UTILISATEUR));
 
     if (!$nom || !$prenom || !$login || !$mdp) {
         json_response(['error' => 'Tous les champs sont obligatoires (nom, prenom, login, mot_de_passe)'], 400);
@@ -96,7 +96,7 @@ if ($method === 'POST') {
     if (strlen($login) < 3)  json_response(['error' => 'Le login doit faire au moins 3 caractères'], 400);
     if (strlen($mdp) < 8)    json_response(['error' => 'Le mot de passe doit faire au moins 8 caractères'], 400);
 
-    validateRole($role);
+    validate_role($role);
 
     $check = $pdo->prepare('SELECT id FROM UTILISATEUR WHERE login = ? LIMIT 1');
     $check->execute([$login]);
@@ -157,9 +157,9 @@ if ($method === 'PUT') {
         $params[]  = password_hash($mdp, PASSWORD_BCRYPT);
     }
     if (isset($body['role'])) {
-        $role = strtoupper(trim($body['role']));
-        validateRole($role);
-        if ($user_id === (int)$payload['sub'] && $role !== 'ADMIN') {
+        $role = normalize_role((string)$body['role']);
+        validate_role($role);
+        if ($user_id === (int)$payload['sub'] && $role !== ROLE_ADMIN) {
             json_response(['error' => 'Vous ne pouvez pas retirer votre propre rôle admin'], 403);
         }
         $updates[] = 'role = ?';
@@ -216,11 +216,4 @@ function formatUser(array $u): array {
         'actif'                   => (bool) $u['actif'],
         'date_derniere_connexion' => $u['date_derniere_connexion'],
     ];
-}
-
-function validateRole(string $role): void {
-    $allowed = ['UTILISATEUR', 'ADMIN', 'VISITEUR'];
-    if (!in_array($role, $allowed, true)) {
-        json_response(['error' => 'Rôle invalide. Autorisés : ' . implode(', ', $allowed)], 400);
-    }
 }

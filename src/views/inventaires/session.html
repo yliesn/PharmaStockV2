@@ -48,61 +48,16 @@
 <div class="app-layout">
 
   <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <a href="../dashboard.html" class="sidebar-brand">PharmaStock</a>
-      <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="sidebar-section">Stock</div>
-      <a href="../supplies/list.html" class="sidebar-link">
-        <i class="fas fa-boxes"></i> Produits
-      </a>
-      <a href="../supplies/entry.html" class="sidebar-link">
-        <i class="fas fa-arrow-circle-down"></i> Entrées
-      </a>
-      <a href="../supplies/exit.html" class="sidebar-link">
-        <i class="fas fa-arrow-circle-up"></i> Sorties
-      </a>
-      <a href="../supplies/history.html" class="sidebar-link">
-        <i class="fas fa-history"></i> Historique
-      </a>
-      <a href="../supplies/generate-barcode.html" class="sidebar-link">
-        <i class="fas fa-barcode"></i> Codes-barres
-      </a>
-      <div class="sidebar-section">Inventaire</div>
-      <a href="history.html" class="sidebar-link active">
-        <i class="fas fa-clipboard-list"></i> Historique inventaires
-      </a>
-      <a href="create.html" class="sidebar-link">
-        <i class="fas fa-plus-circle"></i> Nouvel inventaire
-      </a>
-      <div class="sidebar-section">Administration</div>
-      <a href="../admin/users.html" class="sidebar-link">
-        <i class="fas fa-users"></i> Utilisateurs
-      </a>
-      <a href="../profile.html" class="sidebar-link">
-        <i class="fas fa-user-circle"></i> Mon profil
-      </a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="sidebar-avatar" id="sidebarAvatar">U</div>
-      <div class="sidebar-user-info">
-        <div id="userMenuText" class="sidebar-user-name">Chargement…</div>
-        <div id="sidebarRole" class="sidebar-user-role"></div>
-      </div>
-      <a href="#" id="logoutBtn" class="sidebar-logout" title="Déconnexion">
-        <i class="fas fa-sign-out-alt"></i>
-      </a>
-    </div>
-  </aside>
-  <div class="overlay" id="overlay"></div>
+  <aside class="sidebar" id="sidebar"></aside>
+  <script src="../../assets/js/sidebar.js"></script>
 
   <!-- Contenu principal -->
   <div class="main-content">
     <div class="topbar">
-      <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
-      <span class="topbar-title">Saisie Inventaire</span>
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+        <h1 class="page-title">Saisie Inventaire</h1>
+      </div>
     </div>
     <div class="content">
 
@@ -176,7 +131,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../../assets/js/notifications.js"></script>
-<script src="../../assets/js/sidebar.js"></script>
 <script>
   const notify = new NotificationSystem({ position: 'top-right', duration: 5000 });
   const API_BASE = '/api';

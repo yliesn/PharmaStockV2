@@ -33,7 +33,7 @@ if (!$user_id) {
 }
 
 // Vérifie que l'admin ne désactive pas lui-même
-if ($user_id === $payload['sub']) {
+if ($user_id === (int)$payload['sub']) {
     json_response(['error' => 'Vous ne pouvez pas modifier votre propre statut'], 403);
 }
 
