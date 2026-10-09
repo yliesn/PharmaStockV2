@@ -3,233 +3,160 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gestion des Fournitures - PharmaStock</title>
+  <title>Stock - PharmaStock</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../../assets/css/nav.css">
-  <style>
-    .badge-stock {
-      font-size: 0.85rem;
-      padding: 0.4rem 0.6rem;
-    }
-    .table-responsive {
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .search-box {
-      max-width: 300px;
-    }
-    /* Force le scroll horizontal sur mobile */
-    @media (max-width: 768px) {
-      .table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      .table {
-        min-width: 750px;
-      }
-    }
-  </style>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#2c7be5">
-<link rel="apple-touch-icon" href="/assets/img/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#059669">
+  <link rel="apple-touch-icon" href="/assets/img/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 </head>
 <body>
+<div class="app-layout">
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
-  <div class="container-fluid px-4">
-    <a class="navbar-brand fs-4 fw-bold text-primary" href="../../views/dashboard.html">PharmaStock</a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto me-auto">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle active" href="#" id="stockDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Stock
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="stockDropdown">
-            <li><a class="dropdown-item" href="list.html">Consulter stock</a></li>
-            <li><a class="dropdown-item" href="#" onclick="openCreateModal()">Ajouter produit</a></li>
-            
-          </ul>
-        </li>
-
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="mouvementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Mouvement
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="mouvementDropdown">
-            <li><a class="dropdown-item" href="entry.html">Entrées</a></li>
-            <li><a class="dropdown-item" href="exit.html">Sorties</a></li>
-            <li><a class="dropdown-item" href="history.html">Historique</a></li>
-          </ul>
-        </li>
-
-        <li class="nav-item">
-          <a class="nav-link" href="#">Inventaire</a>
-        </li>
-
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Administration
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-            <li><a class="dropdown-item" href="../admin/users.html">Utilisateurs</a></li>
-            <li><a class="dropdown-item" href="#">Paramètres</a></li>
-          </ul>
-        </li>
-      </ul>
-
-      <ul class="navbar-nav">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <span id="userMenuText">Chargement…</span>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="../profile.html" id="profileLink">Mon profil</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Déconnexion</a></li>
-          </ul>
-        </li>
-      </ul>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <a class="sidebar-brand" href="../dashboard.html">
+      <i class="fas fa-pills"></i> PharmaStock
+    </a>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Principal</div>
+        <a class="sidebar-link" href="../dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Stock</div>
+        <a class="sidebar-link active" href="list.html"><i class="fas fa-boxes"></i> Produits</a>
+        <a class="sidebar-link" href="entry.html"><i class="fas fa-arrow-circle-down"></i> Entrées</a>
+        <a class="sidebar-link" href="exit.html"><i class="fas fa-arrow-circle-up"></i> Sorties</a>
+        <a class="sidebar-link" href="history.html"><i class="fas fa-list-alt"></i> Historique mvt.</a>
+        <a class="sidebar-link" href="generate-barcode.html"><i class="fas fa-barcode"></i> Codes-barres</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Inventaire</div>
+        <a class="sidebar-link" href="../inventaires/history.html"><i class="fas fa-clipboard-list"></i> Historique inv.</a>
+        <a class="sidebar-link" href="../inventaires/create.html"><i class="fas fa-plus-circle"></i> Nouvel inventaire</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Administration</div>
+        <a class="sidebar-link" href="../admin/users.html"><i class="fas fa-users"></i> Utilisateurs</a>
+        <a class="sidebar-link" href="../profile.html"><i class="fas fa-user-circle"></i> Mon profil</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="userMenuText">Chargement…</div>
+          <div class="sidebar-user-role" id="sidebarRole"></div>
+        </div>
+      </div>
+      <a href="#" class="sidebar-logout" id="logoutBtn">
+        <i class="fas fa-sign-out-alt"></i> Déconnexion
+      </a>
     </div>
-  </div>
-</nav>
+  </aside>
 
-<div class="container-fluid mt-5">
-  <div id="alert" class="alert alert-danger d-none"></div>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <!-- En-tête -->
-  <div class="row mb-4">
-    <div class="col-md-6">
-      <h2 class="fw-bold">Gestion des Fournitures</h2>
-      <p class="text-muted">Consulter et gérer l'inventaire des fournitures</p>
-    </div>
-    <div class="col-md-6 text-end">
-      <button class="btn btn-primary" onclick="openCreateModal()">
-        <i class="bi bi-plus-lg"></i> Ajouter une fourniture
-      </button>
-    </div>
-  </div>
-
-  <!-- Barre de recherche -->
-  <div class="row mb-3">
-    <div class="col-md-6">
-      <div class="input-group">
-        <input type="text" id="searchInput" class="form-control" placeholder="Rechercher par référence ou désignation...">
-        <button class="btn btn-outline-secondary" type="button" onclick="loadSupplies(1)">
-          <i class="bi bi-search"></i> Rechercher
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+        <h1 class="page-title">Gestion des fournitures</h1>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
+          <i class="fas fa-plus me-1"></i>Ajouter
         </button>
       </div>
     </div>
-    <div class="col-md-6 text-end">
-      <span class="text-muted">
-        Total: <strong id="totalSupplies">0</strong> fournitures
-      </span>
-    </div>
-  </div>
 
-  <!-- Filtres -->
-  <div class="row mb-3">
-    <div class="col-12">
-      <div class="card bg-light border-0">
-        <div class="card-body p-3">
-          <div class="row align-items-center">
-            <div class="col-md-8">
-              <h6 class="mb-3 fw-bold">Filtres</h6>
-              <div class="row g-2">
-                <div class="col-auto">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="filterStockNormal" onchange="loadSupplies(1)">
-                    <label class="form-check-label" for="filterStockNormal">
-                      Stock normal <span class="badge bg-success">Stock ≥ Alerte</span>
-                    </label>
-                  </div>
-                </div>
-                <div class="col-auto">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="filterStockBas" onchange="loadSupplies(1)">
-                    <label class="form-check-label" for="filterStockBas">
-                      Stock bas <span class="badge bg-warning">0 < Stock < Alerte</span>
-                    </label>
-                  </div>
-                </div>
-                <div class="col-auto">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="filterRupture" onchange="loadSupplies(1)">
-                    <label class="form-check-label" for="filterRupture">
-                      Rupture <span class="badge bg-danger">Stock = 0</span>
-                    </label>
-                  </div>
-                </div>
-                <div class="col-auto">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="filterCommande" onchange="loadSupplies(1)">
-                    <label class="form-check-label" for="filterCommande">
-                      En commande <span class="badge bg-info">Commande en cours</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
+    <div class="content">
+
+      <div id="alert" class="alert alert-danger d-none mb-3"></div>
+
+      <!-- Recherche + filtres -->
+      <div class="filter-bar mb-3">
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-5">
+            <label class="form-label" style="font-size:.75rem;font-weight:600;margin-bottom:.25rem;">Recherche</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fas fa-search" style="font-size:.75rem;color:#94a3b8;"></i></span>
+              <input type="text" id="searchInput" class="form-control" placeholder="Référence ou désignation…">
+              <button class="btn btn-outline-secondary" type="button" onclick="loadSupplies(1)">Rechercher</button>
             </div>
-            <div class="col-md-4 text-end">
-              <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
-                <i class="bi bi-x-circle"></i> Réinitialiser les filtres
+          </div>
+          <div class="col-12 col-md-7">
+            <label class="form-label" style="font-size:.75rem;font-weight:600;margin-bottom:.25rem;">Filtres rapides</label>
+            <div class="d-flex gap-3 flex-wrap align-items-center">
+              <div class="form-check form-check-inline mb-0">
+                <input class="form-check-input" type="checkbox" id="filterStockNormal" onchange="loadSupplies(1)">
+                <label class="form-check-label" for="filterStockNormal" style="font-size:.8rem;">Stock OK</label>
+              </div>
+              <div class="form-check form-check-inline mb-0">
+                <input class="form-check-input" type="checkbox" id="filterStockBas" onchange="loadSupplies(1)">
+                <label class="form-check-label" for="filterStockBas" style="font-size:.8rem;">Stock bas</label>
+              </div>
+              <div class="form-check form-check-inline mb-0">
+                <input class="form-check-input" type="checkbox" id="filterRupture" onchange="loadSupplies(1)">
+                <label class="form-check-label" for="filterRupture" style="font-size:.8rem;">Rupture</label>
+              </div>
+              <div class="form-check form-check-inline mb-0">
+                <input class="form-check-input" type="checkbox" id="filterCommande" onchange="loadSupplies(1)">
+                <label class="form-check-label" for="filterCommande" style="font-size:.8rem;">En commande</label>
+              </div>
+              <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">
+                <i class="fas fa-times me-1"></i>Réinitialiser
               </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Tableau des fournitures -->
-  <div class="card shadow-sm">
-    <div class="table-responsive">
-      <table class="table table-hover mb-0">
-        <thead class="table-light">
-          <tr>
-            <th style="width: 15%;">Référence</th>
-            <th style="width: 35%;">Désignation</th>
-            <th style="width: 12%; text-align: center;">Stock</th>
-            <th style="width: 12%; text-align: center;">Alerte</th>
-            <th style="width: 15%; text-align: center;">Commande</th>
-            <th style="width: 9%; text-align: center;">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="suppliesTableBody">
-          <tr>
-            <td colspan="5" class="text-center text-muted py-4">Chargement...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+      <!-- Tableau -->
+      <div class="table-wrapper">
+        <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+          <span style="font-size:.75rem;color:var(--text-2);">
+            Total: <strong id="totalSupplies">0</strong> fournitures
+          </span>
+          <select id="limitSelect" class="form-select form-select-sm d-inline-block" style="width:110px;" onchange="saveLimitToStorage(this.value); loadSupplies(1)">
+            <option value="10" selected>10 / page</option>
+            <option value="15">15 / page</option>
+            <option value="20">20 / page</option>
+            <option value="50">50 / page</option>
+            <option value="100">100 / page</option>
+          </select>
+        </div>
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th style="width:15%;">Référence</th>
+                <th style="width:35%;">Désignation</th>
+                <th style="width:12%;text-align:center;">Stock</th>
+                <th style="width:12%;text-align:center;">Alerte</th>
+                <th style="width:15%;text-align:center;">Commande</th>
+                <th style="width:11%;text-align:center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="suppliesTableBody">
+              <tr><td colspan="6" class="text-center text-muted py-4">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-  <!-- Pagination -->
-  <div class="row mt-4">
-    <div class="col-md-6">
-      <nav aria-label="Page navigation">
-        <ul class="pagination" id="paginationNav">
-          <!-- Sera rempli dynamiquement -->
-        </ul>
-      </nav>
-    </div>
-    <div class="col-md-6 text-end">
-      <select id="limitSelect" class="form-select d-inline-block" style="width: 120px;" onchange="saveLimitToStorage(this.value); loadSupplies(1)">
-        <option value="10"selected>10 par page</option>
-        <option value="15" >15 par page</option>
-        <option value="20">20 par page</option>
-        <option value="50">50 par page</option>
-        <option value="100">100 par page</option>
-      </select>
-    </div>
-  </div>
-</div>
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <nav><ul class="pagination pagination-sm mb-0" id="paginationNav"></ul></nav>
+      </div>
+
+    </div><!-- /.content -->
+  </div><!-- /.main-content -->
+</div><!-- /.app-layout -->
 
 <!-- Modal Créer Fourniture -->
 <div class="modal fade" id="createModal" tabindex="-1">
@@ -242,57 +169,47 @@
       <div class="modal-body">
         <form id="supplyForm">
           <div class="mb-3">
-            <label for="designation" class="form-label">Désignation *</label>
+            <label class="form-label" style="font-size:.8rem;font-weight:600;">Désignation <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="designation" required>
           </div>
           <div class="mb-3">
-            <label for="conditionnement" class="form-label">Conditionnement</label>
+            <label class="form-label" style="font-size:.8rem;font-weight:600;">Conditionnement</label>
             <input type="text" class="form-control" id="conditionnement" placeholder="ex: Boîte x 20">
           </div>
-          <div class="row">
+          <div class="row g-3 mb-3">
             <div class="col-md-6">
-              <label for="quantite_stock" class="form-label">Quantité</label>
+              <label class="form-label" style="font-size:.8rem;font-weight:600;">Quantité</label>
               <input type="number" class="form-control" id="quantite_stock" value="0" min="0">
             </div>
             <div class="col-md-6">
-              <label for="seuil_alerte" class="form-label">Seuil alerte</label>
+              <label class="form-label" style="font-size:.8rem;font-weight:600;">Seuil alerte</label>
               <input type="number" class="form-control" id="seuil_alerte" min="0">
             </div>
           </div>
-          <div class="mb-3">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="commande_en_cours">
-              <label class="form-check-label" for="commande_en_cours">
-                Commande en cours
-              </label>
-            </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="commande_en_cours">
+            <label class="form-check-label" for="commande_en_cours" style="font-size:.85rem;">Commande en cours</label>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-        <button type="button" class="btn btn-primary" id="submitBtn" onclick="submitSupplyForm()">Créer</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-primary btn-sm" id="submitBtn" onclick="submitSupplyForm()">Créer</button>
       </div>
     </div>
   </div>
 </div>
 
 <script src="../../assets/js/notifications.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/js/sidebar.js"></script>
 <script>
   const API = '../../api';
   const notify = new NotificationSystem({ position: 'top-right', duration: 4000 });
-  let currentPage = 1;
-  let currentSearch = '';
-  let currentSupplyId = null;
-  let allSupplies = [];
-  let allPagination = {};
+  let currentPage = 1, currentSearch = '', currentSupplyId = null, allSupplies = [], allPagination = {};
 
-  // Vérifie l'authentification
-  if (!localStorage.getItem('jwt')) {
-    window.location = '/index.html';
-  }
+  if (!localStorage.getItem('jwt')) window.location = '/index.html';
 
-  // Initialise la page
   document.addEventListener('DOMContentLoaded', () => {
     loadUserMenu();
     loadLimitFromStorage();
@@ -300,353 +217,180 @@
     setupEventListeners();
   });
 
-  // Load user menu
   function loadUserMenu() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    document.getElementById('userMenuText').textContent = `${user.prenom || 'User'} ${user.nom || ''}`;
-    
-    document.getElementById('logoutBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      localStorage.removeItem('jwt');
-      localStorage.removeItem('user');
-      window.location = '/index.html';
-    });
-  }
-
-  // Setup event listeners
-  function setupEventListeners() {
-    document.getElementById('searchInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        currentSearch = document.getElementById('searchInput').value;
-        loadSupplies(1);
-      }
-    });
-  }
-
-  // Charge la limite depuis le localStorage
-  function loadLimitFromStorage() {
-    const savedLimit = localStorage.getItem('suppliesLimit');
-    if (savedLimit) {
-      document.getElementById('limitSelect').value = savedLimit;
+    if (user.prenom) {
+      document.getElementById('userMenuText').textContent  = `${user.prenom} ${user.nom}`;
+      document.getElementById('sidebarAvatar').textContent = ((user.prenom[0]||'')+(user.nom[0]||'')).toUpperCase();
+      document.getElementById('sidebarRole').textContent   = user.role || '';
     }
   }
 
-  // Sauvegarde la limite dans le localStorage
-  function saveLimitToStorage(limit) {
-    localStorage.setItem('suppliesLimit', limit);
+  function setupEventListeners() {
+    document.getElementById('searchInput').addEventListener('keypress', e => {
+      if (e.key === 'Enter') { currentSearch = document.getElementById('searchInput').value; loadSupplies(1); }
+    });
   }
 
-  // Charge les fournitures
+  function loadLimitFromStorage() {
+    const saved = localStorage.getItem('suppliesLimit');
+    if (saved) document.getElementById('limitSelect').value = saved;
+  }
+
+  function saveLimitToStorage(limit) { localStorage.setItem('suppliesLimit', limit); }
+
   async function loadSupplies(page) {
     currentPage = page;
-    const limit = document.getElementById('limitSelect').value;
+    const limit  = document.getElementById('limitSelect').value;
     const search = document.getElementById('searchInput').value;
-
-    // Si on change de filtre/recherche, on refait l'appel API. Sinon on pagine juste côté client
-    const hasFiltersChanged = 
-      document.getElementById('filterStockNormal').checked ||
+    const hasFiltersChanged = document.getElementById('filterStockNormal').checked ||
       document.getElementById('filterStockBas').checked ||
       document.getElementById('filterRupture').checked ||
       document.getElementById('filterCommande').checked ||
       search !== currentSearch;
-
-    // Si c'est juste un changement de page et pas de filtre, ne pas refaire l'appel API
     if (page !== 1 && !hasFiltersChanged && allSupplies.length > 0) {
-      // Juste refaire la pagination côté client
-      let filtered = applyFilters(allSupplies);
-      renderSuppliesTable(filtered);
-      renderFilteredPagination(filtered, parseInt(limit));
+      renderSuppliesTable(applyFilters(allSupplies));
+      renderFilteredPagination(applyFilters(allSupplies), parseInt(limit));
       return;
     }
-
     currentSearch = search;
-
-    // Récupère les données avec une limite élevée pour obtenir tous les résultats
     const url = new URL(`${API}/supplies/list.php`, window.location.origin);
     url.searchParams.append('page', 1);
-    url.searchParams.append('limit', 100); // Récupère jusqu'à 100 résultats
+    url.searchParams.append('limit', 100);
     if (search) url.searchParams.append('search', search);
-
     try {
-      const res = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('jwt')}` },
-      });
-
-      if (res.status === 401) {
-        localStorage.removeItem('jwt');
-        window.location = '/index.html';
-        return;
-      }
-
+      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${localStorage.getItem('jwt')}` } });
+      if (res.status === 401) { localStorage.removeItem('jwt'); window.location = '/index.html'; return; }
       const data = await res.json();
-
-      if (!res.ok) {
-        notify.error('Erreur', data.error || 'Erreur lors du chargement');
-        return;
-      }
-
-      // Sauvegarde les données originales
+      if (!res.ok) { notify.error('Erreur', data.error || 'Erreur lors du chargement'); return; }
       allSupplies = data.data;
       allPagination = data.pagination;
-
-      // Applique les filtres côté client
-      let filtered = applyFilters(allSupplies);
-
-      // Réinitialise à la page 1 si des filtres ont changé
       currentPage = 1;
-
-      // Affiche le total original
       document.getElementById('totalSupplies').textContent = data.pagination.total;
-
-      // Affiche les résultats filtrés et la pagination
+      const filtered = applyFilters(allSupplies);
       renderSuppliesTable(filtered);
       renderFilteredPagination(filtered, parseInt(limit));
-    } catch (e) {
-      notify.error('Erreur', 'Impossible de contacter le serveur');
-      console.error(e);
-    }
+    } catch(e) { notify.error('Erreur', 'Impossible de contacter le serveur'); }
   }
 
-  // Applique les filtres
   function applyFilters(supplies) {
-    const filterStockNormal = document.getElementById('filterStockNormal').checked;
-    const filterStockBas = document.getElementById('filterStockBas').checked;
-    const filterRupture = document.getElementById('filterRupture').checked;
-    const filterCommande = document.getElementById('filterCommande').checked;
-
-    // Si aucun filtre, retourne tous les résultats
-    if (!filterStockNormal && !filterStockBas && !filterRupture && !filterCommande) {
-      return supplies;
-    }
-
+    const fN = document.getElementById('filterStockNormal').checked;
+    const fB = document.getElementById('filterStockBas').checked;
+    const fR = document.getElementById('filterRupture').checked;
+    const fC = document.getElementById('filterCommande').checked;
+    if (!fN && !fB && !fR && !fC) return supplies;
     return supplies.filter(s => {
-      let matches = false;
-      
-      // Stock normal: stock >= seuil_alerte
-      if (filterStockNormal && s.quantite_stock > 0 && (!s.seuil_alerte || s.quantite_stock > s.seuil_alerte)) {
-        matches = true;
-      }
-      
-      // Stock bas: 0 < stock < seuil_alerte
-      if (filterStockBas && s.quantite_stock > 0 && s.seuil_alerte && s.quantite_stock <= s.seuil_alerte) {
-        matches = true;
-      }
-      
-      // Rupture: stock = 0
-      if (filterRupture && s.quantite_stock === 0) {
-        matches = true;
-      }
-      
-      // En commande
-      if (filterCommande && s.commande_en_cours) {
-        matches = true;
-      }
-      
-      return matches;
+      if (fN && s.quantite_stock > 0 && (!s.seuil_alerte || s.quantite_stock > s.seuil_alerte)) return true;
+      if (fB && s.quantite_stock > 0 && s.seuil_alerte && s.quantite_stock <= s.seuil_alerte) return true;
+      if (fR && s.quantite_stock === 0) return true;
+      if (fC && s.commande_en_cours) return true;
+      return false;
     });
   }
 
-  // Affiche la pagination avec les résultats filtrés
   function renderFilteredPagination(filtered, limit) {
     const nav = document.getElementById('paginationNav');
     const totalPages = Math.ceil(filtered.length / limit);
-
-    if (totalPages <= 1) {
-      nav.innerHTML = '';
-      return;
-    }
-
+    if (totalPages <= 1) { nav.innerHTML = ''; return; }
     let html = '';
-    const prev = currentPage > 1 ? currentPage - 1 : null;
-    const next = currentPage < totalPages ? currentPage + 1 : null;
-
-    if (prev) {
-      html += `<li class="page-item"><a class="page-link" href="javascript:loadSupplies(${prev})">Précédent</a></li>`;
-    }
-
+    if (currentPage > 1) html += `<li class="page-item"><a class="page-link" href="javascript:loadSupplies(${currentPage-1})">‹</a></li>`;
     for (let i = 1; i <= totalPages; i++) {
-      const active = i === currentPage ? 'active' : '';
-      html += `<li class="page-item ${active}"><a class="page-link" href="javascript:loadSupplies(${i})">${i}</a></li>`;
+      html += `<li class="page-item ${i===currentPage?'active':''}"><a class="page-link" href="javascript:loadSupplies(${i})">${i}</a></li>`;
     }
-
-    if (next) {
-      html += `<li class="page-item"><a class="page-link" href="javascript:loadSupplies(${next})">Suivant</a></li>`;
-    }
-
+    if (currentPage < totalPages) html += `<li class="page-item"><a class="page-link" href="javascript:loadSupplies(${currentPage+1})">›</a></li>`;
     nav.innerHTML = html;
   }
 
-  // Affiche le tableau
-  function renderSuppliesTable(allSupplies) {
-    const limit = parseInt(document.getElementById('limitSelect').value);
+  function renderSuppliesTable(allS) {
+    const limit  = parseInt(document.getElementById('limitSelect').value);
     const offset = (currentPage - 1) * limit;
-    const supplies = allSupplies.slice(offset, offset + limit);
-
+    const supplies = allS.slice(offset, offset + limit);
     const tbody = document.getElementById('suppliesTableBody');
     if (supplies.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Aucune fourniture trouvée</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Aucune fourniture trouvée</td></tr>';
       return;
     }
-
-    tbody.innerHTML = supplies.map(s => `
-      <tr>
-        <td><strong>${escapeHtml(s.reference)}</strong></td>
-        <td>
-          <div>${escapeHtml(s.designation)}</div>
-          ${s.conditionnement ? `<div style="font-size: 0.85rem; color: #999;">${escapeHtml(s.conditionnement)}</div>` : ''}
-        </td>
-        <td style="text-align: center;">
-          <span class="badge bg-info">${s.quantite_stock}</span>
-        </td>
-        <td style="text-align: center;">
-          ${s.seuil_alerte ? `<span class="badge bg-warning">${s.seuil_alerte}</span>` : '-'}
-        </td>
-        <td style="text-align: center;">
-          ${s.commande_en_cours ? '<span class="badge bg-success">Oui</span>' : '<span class="badge bg-secondary">Non</span>'}
-        </td>
-        <td style="text-align: center;">
-          <div class="btn-group" role="group">
-          <a href="view.html?id=${s.id}" class="btn btn-sm btn-info" title="Voir détails"><i class="fas fa-eye"></i></a>
-          <a href="entry.html?id=${s.id}" class="btn btn-sm btn-success" title="Enregistrer une entrée"><i class="fas fa-arrow-left"></i></a>
-          <a href="exit.html?id=${s.id}" class="btn btn-sm btn-danger" title="Enregistrer une sortie"><i class="fas fa-arrow-right"></i></a>
-          <button class="btn btn-sm btn-warning" onclick="toggleOrder(${s.id}, ${s.commande_en_cours ? 'false' : 'true'})" title="${s.commande_en_cours ? 'Annuler commande' : 'Mettre en commande'}">
-            <i class="fas fa-truck"></i>
-          </button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = supplies.map(s => {
+      let stockBadge;
+      if (s.quantite_stock === 0)
+        stockBadge = `<span class="badge bg-danger">${s.quantite_stock}</span>`;
+      else if (s.seuil_alerte && s.quantite_stock <= s.seuil_alerte)
+        stockBadge = `<span class="badge bg-warning">${s.quantite_stock}</span>`;
+      else
+        stockBadge = `<span class="badge bg-success">${s.quantite_stock}</span>`;
+      return `
+        <tr>
+          <td><strong style="font-size:.85rem;">${escapeHtml(s.reference)}</strong></td>
+          <td>
+            <div style="font-size:.85rem;">${escapeHtml(s.designation)}</div>
+            ${s.conditionnement ? `<div style="font-size:.75rem;color:var(--text-3);">${escapeHtml(s.conditionnement)}</div>` : ''}
+          </td>
+          <td class="text-center">${stockBadge}</td>
+          <td class="text-center">${s.seuil_alerte ? `<span class="badge bg-warning">${s.seuil_alerte}</span>` : '—'}</td>
+          <td class="text-center">${s.commande_en_cours ? '<span class="badge bg-info">Oui</span>' : '<span class="badge bg-secondary">Non</span>'}</td>
+          <td class="text-center">
+            <div class="btn-group btn-group-sm">
+              <a href="view.html?id=${s.id}" class="btn btn-outline-primary" title="Voir"><i class="fas fa-eye fa-sm"></i></a>
+              <a href="entry.html?id=${s.id}" class="btn btn-outline-success" title="Entrée"><i class="fas fa-arrow-circle-down fa-sm"></i></a>
+              <a href="exit.html?id=${s.id}" class="btn btn-outline-danger" title="Sortie"><i class="fas fa-arrow-circle-up fa-sm"></i></a>
+              <button class="btn btn-outline-warning" onclick="toggleOrder(${s.id}, ${s.commande_en_cours ? 'false' : 'true'})" title="${s.commande_en_cours ? 'Annuler commande' : 'Mettre en commande'}">
+                <i class="fas fa-truck fa-sm"></i>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
   }
 
-  // Affiche la pagination
-  function renderPagination(pagination) {
-    const nav = document.getElementById('paginationNav');
-    if (pagination.pages <= 1) {
-      nav.innerHTML = '';
-      return;
-    }
-
-    let html = '';
-    const prev = pagination.page > 1 ? pagination.page - 1 : null;
-    const next = pagination.page < pagination.pages ? pagination.page + 1 : null;
-
-    if (prev) {
-      html += `<li class="page-item"><a class="page-link" href="javascript:loadSupplies(${prev})">Précédent</a></li>`;
-    }
-
-    for (let i = 1; i <= pagination.pages; i++) {
-      const active = i === pagination.page ? 'active' : '';
-      html += `<li class="page-item ${active}"><a class="page-link" href="javascript:loadSupplies(${i})">${i}</a></li>`;
-    }
-
-    if (next) {
-      html += `<li class="page-item"><a class="page-link" href="javascript:loadSupplies(${next})">Suivant</a></li>`;
-    }
-
-    nav.innerHTML = html;
-  }
-
-  // Ouvre la modal de création
   function openCreateModal() {
     document.getElementById('supplyForm').reset();
-    const modal = new bootstrap.Modal(document.getElementById('createModal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('createModal')).show();
   }
 
-  // Soumet le formulaire de création
   async function submitSupplyForm() {
-    const designation = document.getElementById('designation').value.trim();
+    const designation     = document.getElementById('designation').value.trim();
     const conditionnement = document.getElementById('conditionnement').value.trim();
-    const quantite_stock = parseInt(document.getElementById('quantite_stock').value) || 0;
-    const seuil_alerte = parseInt(document.getElementById('seuil_alerte').value) || 0;
+    const quantite_stock  = parseInt(document.getElementById('quantite_stock').value) || 0;
+    const seuil_alerte    = parseInt(document.getElementById('seuil_alerte').value) || 0;
     const commande_en_cours = document.getElementById('commande_en_cours').checked;
-
-    if (!designation) {
-      notify.error('Erreur', 'Veuillez remplir la désignation');
-      return;
-    }
-
+    if (!designation) { notify.error('Erreur', 'Veuillez remplir la désignation'); return; }
     try {
-      const response = await fetch('/api/supplies/create.php', {
+      const res = await fetch('/api/supplies/create.php', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + localStorage.getItem('jwt')
-        },
-        body: JSON.stringify({
-          designation,
-          conditionnement,
-          quantite_stock,
-          seuil_alerte,
-          commande_en_cours
-        })
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('jwt') },
+        body: JSON.stringify({ designation, conditionnement, quantite_stock, seuil_alerte, commande_en_cours }),
       });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        const ref = result.data.reference;
-        notify.success('Succès', `Fourniture créée: ${ref}`);
+      const result = await res.json();
+      if (res.ok) {
+        notify.success('Succès', `Fourniture créée: ${result.data.reference}`);
         bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
         loadSupplies(1);
-      } else {
-        notify.error('Erreur', result.error || 'Erreur lors de la création');
-      }
-    } catch (error) {
-      notify.error('Erreur', error.message);
-    }
+      } else { notify.error('Erreur', result.error || 'Erreur lors de la création'); }
+    } catch(e) { notify.error('Erreur', e.message); }
   }
 
-  // Efface tous les filtres
   function clearFilters() {
-    document.getElementById('filterStockNormal').checked = false;
-    document.getElementById('filterStockBas').checked = false;
-    document.getElementById('filterRupture').checked = false;
-    document.getElementById('filterCommande').checked = false;
+    ['filterStockNormal','filterStockBas','filterRupture','filterCommande'].forEach(id => document.getElementById(id).checked = false);
     document.getElementById('searchInput').value = '';
     loadSupplies(1);
   }
 
-  // Bascule la commande en cours
   async function toggleOrder(supplyId, shouldOrder) {
     try {
       const url = new URL(`${API}/supplies/update.php`, window.location.origin);
       url.searchParams.append('id', supplyId);
-
-      const response = await fetch(url, {
+      const res = await fetch(url, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + localStorage.getItem('jwt')
-        },
-        body: JSON.stringify({
-          commande_en_cours: shouldOrder
-        })
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('jwt') },
+        body: JSON.stringify({ commande_en_cours: shouldOrder }),
       });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        const status = shouldOrder ? 'mis en commande' : 'commande annulée';
-        notify.success('Succès', `Fourniture ${status}`);
-        loadSupplies(currentPage);
-      } else {
-        notify.error('Erreur', result.error || result.message || 'Erreur lors de la mise à jour');
-      }
-    } catch (error) {
-      notify.error('Erreur', error.message);
-    }
+      const result = await res.json();
+      if (res.ok) { notify.success('Succès', shouldOrder ? 'Mis en commande' : 'Commande annulée'); loadSupplies(currentPage); }
+      else { notify.error('Erreur', result.error || 'Erreur lors de la mise à jour'); }
+    } catch(e) { notify.error('Erreur', e.message); }
   }
 
-  // Utilitaire pour échapper HTML
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
+  function escapeHtml(text) { const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>

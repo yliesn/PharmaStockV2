@@ -5,289 +5,234 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Détail Fourniture - PharmaStock</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="../../assets/css/nav.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#059669">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <style>
-    .stat-card {
-      border-left: 4px solid #0d6efd;
-      transition: transform 0.2s;
-    }
-    .stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    .stat-value {
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #0d6efd;
-    }
-    .stat-label {
-      font-size: 0.9rem;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .info-group {
-      margin-bottom: 1.5rem;
-    }
+    .info-group { margin-bottom: 1.25rem; }
     .info-label {
-      font-size: 0.9rem;
+      font-size: 0.78rem;
       font-weight: 600;
-      color: #666;
+      color: #94a3b8;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.2rem;
     }
-    .info-value {
-      font-size: 1.1rem;
-      color: #333;
+    .info-value { font-size: 1rem; color: #1e293b; }
+    .peremption-alert  { border-left: 4px solid #dc3545; background: #fff5f5; }
+    .peremption-warning { border-left: 4px solid #ffc107; background: #fffbeb; }
+    .peremption-safe   { border-left: 4px solid #059669; background: #f0fdf4; }
+    .mouvement-entree  { background: #f0fdf4; border-left: 4px solid #059669; }
+    .mouvement-sortie  { background: #fff5f5; border-left: 4px solid #dc3545; }
+    .detail-stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      text-align: center;
     }
-    .badge-status {
-      font-size: 0.95rem;
-      padding: 0.5rem 0.8rem;
-    }
-    .peremption-alert {
-      border-left: 4px solid #dc3545;
-    }
-    .peremption-warning {
-      border-left: 4px solid #ffc107;
-    }
-    .peremption-safe {
-      border-left: 4px solid #198754;
-    }
-    .mouvement-entree {
-      background-color: #d4edda;
-      border-left: 4px solid #198754;
-    }
-    .mouvement-sortie {
-      background-color: #f8d7da;
-      border-left: 4px solid #dc3545;
-    }
+    .detail-stat-value { font-size: 1.8rem; font-weight: 700; }
+    .detail-stat-label { font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
   </style>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#2c7be5">
-<link rel="apple-touch-icon" href="/assets/img/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
-  <div class="container-fluid px-4">
-    <a class="navbar-brand fs-4 fw-bold text-primary" href="../../views/dashboard.html">PharmaStock</a>
+<div class="app-layout">
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto me-auto">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="list.html" id="stockDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Stock
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="stockDropdown">
-            <li><a class="dropdown-item" href="list.html">Consulter stock</a></li>
-            <li><a class="dropdown-item" href="list.html" onclick="openCreateModal()">Ajouter produit</a></li>
-            
-          </ul>
-        </li>
-
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="mouvementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Mouvement
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="mouvementDropdown">
-            <li><a class="dropdown-item" href="entry.html">Entrées</a></li>
-            <li><a class="dropdown-item" href="exit.html">Sorties</a></li>
-            <li><a class="dropdown-item" href="history.html">Historique</a></li>
-          </ul>
-        </li>
-
-        <li class="nav-item">
-          <a class="nav-link" href="#">Inventaire</a>
-        </li>
-
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Administration
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-            <li><a class="dropdown-item" href="../admin/users.html">Utilisateurs</a></li>
-            <li><a class="dropdown-item" href="#">Paramètres</a></li>
-          </ul>
-        </li>
-      </ul>
-
-      <ul class="navbar-nav">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <span id="userMenuText">Chargement…</span>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="../profile.html" id="profileLink">Mon profil</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Déconnexion</a></li>
-          </ul>
-        </li>
-      </ul>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="../dashboard.html" class="sidebar-brand">PharmaStock</a>
+      <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
     </div>
-  </div>
-</nav>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">Stock</div>
+      <a href="list.html" class="sidebar-link active">
+        <i class="fas fa-boxes"></i> Produits
+      </a>
+      <a href="entry.html" class="sidebar-link">
+        <i class="fas fa-arrow-circle-down"></i> Entrées
+      </a>
+      <a href="exit.html" class="sidebar-link">
+        <i class="fas fa-arrow-circle-up"></i> Sorties
+      </a>
+      <a href="history.html" class="sidebar-link">
+        <i class="fas fa-history"></i> Historique
+      </a>
+      <a href="generate-barcode.html" class="sidebar-link">
+        <i class="fas fa-barcode"></i> Codes-barres
+      </a>
+      <div class="sidebar-section">Inventaire</div>
+      <a href="../inventaires/history.html" class="sidebar-link">
+        <i class="fas fa-clipboard-list"></i> Historique inventaires
+      </a>
+      <a href="../inventaires/create.html" class="sidebar-link">
+        <i class="fas fa-plus-circle"></i> Nouvel inventaire
+      </a>
+      <div class="sidebar-section">Administration</div>
+      <a href="../admin/users.html" class="sidebar-link">
+        <i class="fas fa-users"></i> Utilisateurs
+      </a>
+      <a href="../profile.html" class="sidebar-link">
+        <i class="fas fa-user-circle"></i> Mon profil
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+      <div class="sidebar-user-info">
+        <div id="userMenuText" class="sidebar-user-name">Chargement…</div>
+        <div id="sidebarRole" class="sidebar-user-role"></div>
+      </div>
+      <a href="#" id="logoutBtn" class="sidebar-logout" title="Déconnexion">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </aside>
+  <div class="overlay" id="overlay"></div>
 
-<div class="container-fluid mt-5">
-  <div id="alert" class="alert alert-danger d-none"></div>
+  <!-- Contenu principal -->
+  <div class="main-content">
+    <div class="topbar">
+      <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+      <span class="topbar-title" id="supplyTitle">Chargement…</span>
+      <div class="ms-auto d-flex gap-2">
+        <a href="entry.html?id=" id="entryBtn" class="btn btn-sm btn-success">
+          <i class="fas fa-arrow-down me-1"></i>Entrée
+        </a>
+        <a href="exit.html?id=" id="exitBtn" class="btn btn-sm btn-danger">
+          <i class="fas fa-arrow-up me-1"></i>Sortie
+        </a>
+      </div>
+    </div>
+    <div class="content">
 
-  <!-- En-tête -->
-  <div class="row mb-4">
-    <div class="col-md-8">
-      <div class="d-flex align-items-center gap-3">
+      <div id="alert" class="alert alert-danger d-none mb-3"></div>
+
+      <!-- En-tête produit -->
+      <div class="d-flex align-items-center gap-3 mb-4">
         <a href="list.html" class="btn btn-sm btn-outline-secondary">← Retour</a>
         <div>
-          <h2 class="fw-bold mb-1" id="supplyTitle">Chargement...</h2>
-          <p class="text-muted mb-0"><span id="supplyRef">--</span></p>
+          <p class="text-muted mb-0 small" id="supplyRef">—</p>
         </div>
       </div>
-    </div>
-    <div class="col-md-4 text-end">
-      <a href="entry.html?id=" id="entryBtn" class="btn btn-success btn-sm">
-        <i class="fas fa-arrow-left"></i> Entrée
-      </a>
-      <a href="exit.html?id=" id="exitBtn" class="btn btn-danger btn-sm">
-        <i class="fas fa-arrow-right"></i> Sortie
-      </a>
-    </div>
-  </div>
 
-  <!-- Infos générales -->
-  <div class="row mb-4">
-    <div class="col-lg-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title fw-bold mb-4">Informations générales</h5>
-          
-          <div class="row">
-            <div class="col-md-6">
-              <div class="info-group">
-                <div class="info-label">Référence</div>
-                <div class="info-value" id="infoRef">--</div>
-              </div>
-              <div class="info-group">
-                <div class="info-label">Stock actuel</div>
-                <div class="info-value">
-                  <span class="badge bg-info" id="infoStock">0</span>
+      <div class="row g-4 mb-4">
+
+        <!-- Informations générales -->
+        <div class="col-lg-6">
+          <div class="table-wrapper h-100">
+            <div class="px-3 py-3 border-bottom">
+              <h6 class="fw-bold mb-0">Informations générales</h6>
+            </div>
+            <div class="p-3">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="info-group">
+                    <div class="info-label">Référence</div>
+                    <div class="info-value" id="infoRef">—</div>
+                  </div>
+                  <div class="info-group">
+                    <div class="info-label">Stock actuel</div>
+                    <div class="info-value">
+                      <span class="badge bg-info fs-6" id="infoStock">0</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="info-group">
+                    <div class="info-label">Seuil d'alerte</div>
+                    <div class="info-value" id="infoAlerte">—</div>
+                  </div>
+                  <div class="info-group">
+                    <div class="info-label">Commande en cours</div>
+                    <div id="infoCommande"><span class="badge bg-secondary">—</span></div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="col-md-6">
+              <hr>
               <div class="info-group">
-                <div class="info-label">Seuil d'alerte</div>
-                <div class="info-value" id="infoAlerte">--</div>
+                <div class="info-label">Désignation</div>
+                <div class="info-value" id="infoDesign">—</div>
               </div>
               <div class="info-group">
-                <div class="info-label">Commande en cours</div>
-                <div id="infoCommande">
-                  <span class="badge bg-secondary">--</span>
-                </div>
+                <div class="info-label">Conditionnement</div>
+                <div class="info-value" id="infoCond">—</div>
+              </div>
+              <div class="info-group">
+                <div class="info-label">Statut</div>
+                <div id="infoStatus"><span class="badge bg-secondary">—</span></div>
+              </div>
+              <hr>
+              <div class="info-group mb-0">
+                <div class="info-label mb-2">Code-barre</div>
+                <svg id="barcodeContainer" style="max-width:200px; display:block; margin-bottom:.5rem;"></svg>
+                <button class="btn btn-sm btn-outline-secondary" onclick="downloadBarcode()">
+                  <i class="fas fa-download me-1"></i>Télécharger
+                </button>
               </div>
             </div>
           </div>
+        </div>
 
-          <hr>
-
-          <div class="info-group">
-            <div class="info-label">Désignation</div>
-            <div class="info-value" id="infoDesign">--</div>
-          </div>
-
-          <div class="info-group">
-            <div class="info-label">Conditionnement</div>
-            <div class="info-value" id="infoCond">--</div>
-          </div>
-
-          <div class="info-group">
-            <div class="info-label">Statut</div>
-            <div id="infoStatus">
-              <span class="badge bg-secondary">--</span>
+        <!-- Stats -->
+        <div class="col-lg-6">
+          <div class="row g-3">
+            <div class="col-6">
+              <div class="detail-stat">
+                <div class="detail-stat-value" id="statMouvements">0</div>
+                <div class="detail-stat-label">Mouvements</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="detail-stat">
+                <div class="detail-stat-value text-success" id="statEntrees">0</div>
+                <div class="detail-stat-label">Entrées totales</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="detail-stat">
+                <div class="detail-stat-value text-danger" id="statSorties">0</div>
+                <div class="detail-stat-label">Sorties totales</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="detail-stat">
+                <div class="detail-stat-value text-muted" style="font-size:1rem;" id="statDernier">—</div>
+                <div class="detail-stat-label">Dernier mouvement</div>
+              </div>
             </div>
           </div>
+        </div>
+
+      </div>
+
+      <!-- Historique des mouvements -->
+      <div class="table-wrapper mb-4">
+        <div class="d-flex justify-content-between align-items-center px-3 py-3 border-bottom">
+          <h6 class="fw-bold mb-0">Historique des mouvements (derniers 5)</h6>
+          <button class="btn btn-sm btn-outline-secondary" id="voirToutBtn" onclick="viewAllMouvements()" style="display:none;">Voir tout</button>
+        </div>
+        <div class="p-3" id="mouvementsContainer">
+          <p class="text-muted text-center py-4">Chargement…</p>
         </div>
       </div>
-    </div>
 
-    <!-- Stats Card -->
-    <div class="col-lg-6">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <div class="card stat-card shadow-sm">
-            <div class="card-body">
-              <div class="stat-value" id="statMouvements">0</div>
-              <div class="stat-label">Mouvements</div>
-            </div>
-          </div>
+      <!-- Péremptions -->
+      <div class="table-wrapper mb-4">
+        <div class="d-flex justify-content-between align-items-center px-3 py-3 border-bottom">
+          <h6 class="fw-bold mb-0">Dates de péremption</h6>
+          <button class="btn btn-sm btn-primary" onclick="openAddPeremptionModal()">
+            <i class="fas fa-plus me-1"></i>Ajouter lot
+          </button>
         </div>
-        
-        <div class="col-md-6">
-          <div class="card stat-card shadow-sm" style="border-left-color: #198754;">
-            <div class="card-body">
-              <div class="stat-value" style="color: #198754;" id="statEntrees">0</div>
-              <div class="stat-label">Entrées totales</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="card stat-card shadow-sm" style="border-left-color: #dc3545;">
-            <div class="card-body">
-              <div class="stat-value" style="color: #dc3545;" id="statSorties">0</div>
-              <div class="stat-label">Sorties totales</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="card stat-card shadow-sm" style="border-left-color: #6c757d;">
-            <div class="card-body">
-              <div class="stat-value" style="color: #6c757d;" id="statDernier">--</div>
-              <div class="stat-label">Dernier mouvement</div>
-            </div>
-          </div>
+        <div id="peremptionsContainer" class="p-3">
+          <p class="text-muted text-center py-4">Chargement…</p>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Mouvements de stock -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card shadow-sm">
-        <div class="card-header bg-light border-bottom">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold">Historique des mouvements (derniers 5)</h5>
-            <button class="btn btn-sm btn-outline-primary" id="voirToutBtn" onclick="viewAllMouvements()" style="display: none;">Voir tout</button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div id="mouvementsContainer">
-          <p class="text-muted text-center py-4">Chargement...</p>
-        </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Péremptions -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card shadow-sm">
-        <div class="card-header bg-light border-bottom">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold">Dates de péremption</h5>
-            <button class="btn btn-sm btn-primary" onclick="openAddPeremptionModal()">+ Ajouter lot</button>
-          </div>
-        </div>
-        <div id="peremptionsContainer" class="card-body">
-          <p class="text-muted text-center py-4">Chargement...</p>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -324,41 +269,24 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../../assets/js/notifications.js"></script>
+<script src="../../assets/js/sidebar.js"></script>
 <script>
   const API = '../../api';
   const notify = new NotificationSystem({ position: 'top-right', duration: 4000 });
   let supplyId = null;
   let supplyData = null;
-  let allMouvementsData = null;
 
-  // Vérifie l'authentification
   if (!localStorage.getItem('jwt')) {
     window.location = '/index.html';
   }
 
-  // Initialise la page
   document.addEventListener('DOMContentLoaded', () => {
-    loadUserMenu();
     initPage();
   });
 
-  // Load user menu
-  function loadUserMenu() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    document.getElementById('userMenuText').textContent = `${user.prenom || 'User'} ${user.nom || ''}`;
-    
-    document.getElementById('logoutBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      localStorage.removeItem('jwt');
-      localStorage.removeItem('user');
-      window.location = '/index.html';
-    });
-  }
-
-  // Initialise la page
   function initPage() {
-    // Récupère l'ID depuis l'URL
     const params = new URLSearchParams(window.location.search);
     supplyId = params.get('id');
 
@@ -372,7 +300,6 @@
     loadMouvements();
   }
 
-  // Charge les détails de la fourniture
   async function loadSupplyDetails() {
     try {
       const url = new URL(`${API}/supplies/show.php`, window.location.origin);
@@ -404,52 +331,82 @@
     }
   }
 
-  // Affiche les infos de la fourniture
   function displaySupplyInfo() {
     const d = supplyData;
 
-    // En-tête
     document.getElementById('supplyTitle').textContent = escapeHtml(d.designation);
-    document.getElementById('supplyRef').textContent = escapeHtml(d.reference);
+    document.getElementById('supplyRef').textContent   = escapeHtml(d.reference);
 
-    // Mettre à jour les URLs des boutons d'action
     document.getElementById('entryBtn').href = `entry.html?id=${d.id}`;
-    document.getElementById('exitBtn').href = `exit.html?id=${d.id}`;
+    document.getElementById('exitBtn').href  = `exit.html?id=${d.id}`;
 
-    // Infos générales
-    document.getElementById('infoRef').textContent = escapeHtml(d.reference);
+    document.getElementById('infoRef').textContent    = escapeHtml(d.reference);
     document.getElementById('infoDesign').textContent = escapeHtml(d.designation);
-    document.getElementById('infoCond').textContent = d.conditionnement ? escapeHtml(d.conditionnement) : '--';
-    document.getElementById('infoStock').textContent = d.quantite_stock;
-    document.getElementById('infoAlerte').textContent = d.seuil_alerte || '--';
+    document.getElementById('infoCond').textContent   = d.conditionnement ? escapeHtml(d.conditionnement) : '—';
+    document.getElementById('infoStock').textContent  = d.quantite_stock;
+    document.getElementById('infoAlerte').textContent = d.seuil_alerte || '—';
 
-    // Commande en cours
-    const commandeHtml = d.commande_en_cours 
+    document.getElementById('infoCommande').innerHTML = d.commande_en_cours
       ? '<span class="badge bg-success">Oui</span>'
       : '<span class="badge bg-secondary">Non</span>';
-    document.getElementById('infoCommande').innerHTML = commandeHtml;
 
-    // Statut
-    let statusBadge = 'secondary';
-    let statusText = 'Inconnu';
-    
+    let statusBadge = 'secondary', statusText = 'Inconnu';
     if (d.quantite_stock === 0) {
-      statusBadge = 'danger';
-      statusText = 'Rupture';
-    } else if (d.quantite_stock > 0 && d.seuil_alerte && d.quantite_stock <= d.seuil_alerte) {
-      statusBadge = 'warning';
-      statusText = 'Stock bas';
-    } else if (d.quantite_stock > 0 && (!d.seuil_alerte || d.quantite_stock > d.seuil_alerte)) {
-      statusBadge = 'success';
-      statusText = 'Normal';
+      statusBadge = 'danger'; statusText = 'Rupture';
+    } else if (d.seuil_alerte && d.quantite_stock <= d.seuil_alerte) {
+      statusBadge = 'warning'; statusText = 'Stock bas';
+    } else {
+      statusBadge = 'success'; statusText = 'Normal';
     }
-
     document.getElementById('infoStatus').innerHTML = `<span class="badge bg-${statusBadge}">${statusText}</span>`;
+
+    generateBarcode(d.reference);
   }
 
-  // Affiche les péremptions
+  function generateBarcode(reference) {
+    try {
+      JsBarcode("#barcodeContainer", reference, {
+        format: "CODE128",
+        width: 2,
+        height: 50,
+        displayValue: true,
+        fontSize: 14
+      });
+    } catch (e) {
+      console.error('Erreur génération code-barre:', e);
+    }
+  }
+
+  function downloadBarcode() {
+    try {
+      const svg = document.getElementById('barcodeContainer');
+      if (!svg || !supplyData) { notify.error('Erreur', 'Impossible de générer le code-barre'); return; }
+
+      const canvas  = document.createElement('canvas');
+      const ctx     = canvas.getContext('2d');
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const img     = new Image();
+
+      img.onload = function() {
+        canvas.width  = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const link = document.createElement('a');
+        link.download = `code-barre-${supplyData.reference}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+        notify.success('Succès', 'Code-barre téléchargé');
+      };
+
+      img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+    } catch (e) {
+      notify.error('Erreur', 'Impossible de télécharger le code-barre');
+      console.error(e);
+    }
+  }
+
   function displayPeremptions() {
-    const container = document.getElementById('peremptionsContainer');
+    const container   = document.getElementById('peremptionsContainer');
     const peremptions = supplyData.peremptions || [];
 
     if (peremptions.length === 0) {
@@ -461,23 +418,16 @@
     let html = '';
 
     peremptions.forEach(p => {
-      const datePerem = new Date(p.date_peremption);
-      const daysLeft = Math.floor((datePerem - today) / (1000 * 60 * 60 * 24));
-      
-      let cardClass = 'peremption-safe';
-      let statusText = 'OK';
-      let statusColor = 'success';
+      const datePerem  = new Date(p.date_peremption);
+      const daysLeft   = Math.floor((datePerem - today) / (1000 * 60 * 60 * 24));
+      let cardClass    = 'peremption-safe';
+      let statusText   = `${daysLeft}j restants`;
+      let statusColor  = 'success';
 
       if (daysLeft < 0) {
-        cardClass = 'peremption-alert';
-        statusText = 'PÉRIMÉ';
-        statusColor = 'danger';
+        cardClass = 'peremption-alert'; statusText = 'PÉRIMÉ'; statusColor = 'danger';
       } else if (daysLeft < 30) {
-        cardClass = 'peremption-warning';
-        statusText = `${daysLeft}j restants`;
-        statusColor = 'warning';
-      } else {
-        statusText = `${daysLeft}j restants`;
+        cardClass = 'peremption-warning'; statusColor = 'warning';
       }
 
       html += `
@@ -493,14 +443,12 @@
               <button class="btn btn-sm btn-danger mt-1" onclick="deletePeremption(${p.id})">Supprimer</button>
             </div>
           </div>
-        </div>
-      `;
+        </div>`;
     });
 
     container.innerHTML = html;
   }
 
-  // Charge les mouvements (5 derniers par défaut)
   async function loadMouvements() {
     try {
       const url = new URL(`${API}/supplies/mouvement.php`, window.location.origin);
@@ -518,12 +466,9 @@
       }
 
       const data = await res.json();
-      allMouvementsData = data;
-      
       displayMouvements(data.data);
       displayStats(data.stats);
-      
-      // Affiche le bouton "Voir tout" si plus de 5 mouvements
+
       if (data.stats.total_mouvements > 5) {
         document.getElementById('voirToutBtn').style.display = 'inline-block';
       }
@@ -533,26 +478,21 @@
     }
   }
 
-  // Affiche tous les mouvements
   async function viewAllMouvements() {
     try {
       const url = new URL(`${API}/supplies/mouvement.php`, window.location.origin);
       url.searchParams.append('id', supplyId);
-      url.searchParams.append('limit', 999); // Récupère tous
+      url.searchParams.append('limit', 999);
 
       const res = await fetch(url, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('jwt')}` },
       });
 
-      if (!res.ok) {
-        notify.error('Erreur', 'Erreur lors du chargement');
-        return;
-      }
+      if (!res.ok) { notify.error('Erreur', 'Erreur lors du chargement'); return; }
 
       const data = await res.json();
       displayMouvements(data.data);
-      
-      // Change le bouton en "Masquer"
+
       const btn = document.getElementById('voirToutBtn');
       btn.textContent = 'Masquer';
       btn.onclick = function() { loadMouvements(); };
@@ -562,7 +502,6 @@
     }
   }
 
-  // Affiche les mouvements
   function displayMouvements(mouvements) {
     const container = document.getElementById('mouvementsContainer');
 
@@ -571,57 +510,46 @@
       return;
     }
 
-    let html = '';
-    mouvements.forEach(m => {
+    container.innerHTML = mouvements.map(m => {
       const isEntree = m.type === 'ENTREE';
       const cardClass = isEntree ? 'mouvement-entree' : 'mouvement-sortie';
-      const typeText = isEntree ? 'Entrée' : 'Sortie';
-      const typeIcon = isEntree ? '📦' : '📤';
+      const typeText  = isEntree ? 'Entrée' : 'Sortie';
+      const typeIcon  = isEntree ? '📦' : '📤';
 
-      html += `
+      return `
         <div class="${cardClass} p-3 rounded mb-2">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <strong>${typeIcon} ${typeText}</strong> - ${m.quantite} unités
+              <strong>${typeIcon} ${typeText}</strong> — ${m.quantite} unités
               <div class="text-muted small">
                 Utilisateur: ${escapeHtml(m.utilisateur)}
                 ${m.motif ? `<br>Motif: ${escapeHtml(m.motif)}` : ''}
               </div>
             </div>
-            <div class="text-end">
-              <div class="text-muted">${formatDate(m.date_mouvement)}</div>
-            </div>
+            <div class="text-muted small text-end">${formatDate(m.date_mouvement)}</div>
           </div>
-        </div>
-      `;
-    });
-
-    container.innerHTML = html;
+        </div>`;
+    }).join('');
   }
 
-  // Affiche les stats
   function displayStats(stats) {
     document.getElementById('statMouvements').textContent = stats.total_mouvements || '0';
-    document.getElementById('statEntrees').textContent = stats.total_entrees || '0';
-    document.getElementById('statSorties').textContent = stats.total_sorties || '0';
-    
+    document.getElementById('statEntrees').textContent    = stats.total_entrees    || '0';
+    document.getElementById('statSorties').textContent    = stats.total_sorties    || '0';
     if (stats.dernier_mouvement) {
       document.getElementById('statDernier').textContent = formatDate(stats.dernier_mouvement);
     }
   }
 
-  // Ouvre la modal pour ajouter une péremption
   function openAddPeremptionModal() {
     document.getElementById('peremptionForm').reset();
-    const modal = new bootstrap.Modal(document.getElementById('addPeremptionModal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('addPeremptionModal')).show();
   }
 
-  // Soumet le formulaire d'ajout de péremption
   async function submitPeremptionForm() {
-    const numeroLot = document.getElementById('numeroLot').value.trim();
+    const numeroLot      = document.getElementById('numeroLot').value.trim();
     const datePeremption = document.getElementById('datePeremption').value;
-    const commentaire = document.getElementById('commentaire').value.trim();
+    const commentaire    = document.getElementById('commentaire').value.trim();
 
     if (!numeroLot || !datePeremption) {
       notify.error('Erreur', 'Veuillez remplir tous les champs obligatoires');
@@ -634,15 +562,8 @@
 
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + localStorage.getItem('jwt')
-        },
-        body: JSON.stringify({
-          numero_lot: numeroLot,
-          date_peremption: datePeremption,
-          commentaire: commentaire
-        })
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('jwt') },
+        body: JSON.stringify({ numero_lot: numeroLot, date_peremption: datePeremption, commentaire })
       });
 
       const result = await response.json();
@@ -659,11 +580,8 @@
     }
   }
 
-  // Supprime une péremption
   async function deletePeremption(peremptionId) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce lot?')) {
-      return;
-    }
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce lot?')) return;
 
     try {
       const url = new URL(`${API}/supplies/peremption.php`, window.location.origin);
@@ -672,9 +590,7 @@
 
       const response = await fetch(url, {
         method: 'DELETE',
-        headers: {
-          'Authorization': 'Bearer ' + localStorage.getItem('jwt')
-        }
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('jwt') }
       });
 
       const result = await response.json();
@@ -690,7 +606,6 @@
     }
   }
 
-  // Utilitaires
   function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
@@ -701,8 +616,5 @@
     return new Date(dateStr).toLocaleDateString('fr-FR');
   }
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
