@@ -72,6 +72,8 @@ try {
             'quantite_stock'    => $quantite_stock,
             'seuil_alerte'      => $seuil_alerte,
             'commande_en_cours' => $commande_en_cours,
+            'actif'             => true,
+            'ordre'             => null,
         ],
     ], 201);
 } catch (PDOException $e) {

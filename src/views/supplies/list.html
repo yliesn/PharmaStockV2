@@ -67,6 +67,11 @@
                 <input class="form-check-input" type="checkbox" id="filterCommande" onchange="loadSupplies(1)">
                 <label class="form-check-label" for="filterCommande" style="font-size:.8rem;">En commande</label>
               </div>
+              <select id="statutSelect" class="form-select form-select-sm" style="width:auto;" onchange="loadSupplies(1)" title="Statut">
+                <option value="actifs" selected>Actives</option>
+                <option value="inactifs">Inactives</option>
+                <option value="tous">Toutes</option>
+              </select>
               <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">
                 <i class="fas fa-times me-1"></i>Réinitialiser
               </button>
@@ -214,6 +219,7 @@
     url.searchParams.append('page', 1);
     url.searchParams.append('limit', 100);
     if (search) url.searchParams.append('search', search);
+    url.searchParams.append('statut', document.getElementById('statutSelect').value);
     try {
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${localStorage.getItem('jwt')}` } });
       if (res.status === 401) { localStorage.removeItem('jwt'); window.location = '/index.html'; return; }
@@ -274,9 +280,16 @@
         stockBadge = `<span class="badge bg-warning">${s.quantite_stock}</span>`;
       else
         stockBadge = `<span class="badge bg-success">${s.quantite_stock}</span>`;
+      const inactif = !s.actif;
+      const mvtButtons = inactif ? '' : `
+              <a href="entry.html?id=${s.id}" class="btn btn-outline-success" title="Entrée"><i class="fas fa-arrow-circle-down fa-sm"></i></a>
+              <a href="exit.html?id=${s.id}" class="btn btn-outline-danger" title="Sortie"><i class="fas fa-arrow-circle-up fa-sm"></i></a>
+              <button class="btn btn-outline-warning" onclick="toggleOrder(${s.id}, ${s.commande_en_cours ? 'false' : 'true'})" title="${s.commande_en_cours ? 'Annuler commande' : 'Mettre en commande'}">
+                <i class="fas fa-truck fa-sm"></i>
+              </button>`;
       return `
-        <tr>
-          <td><strong style="font-size:.85rem;">${escapeHtml(s.reference)}</strong></td>
+        <tr${inactif ? ' class="text-muted" style="opacity:.6;"' : ''}>
+          <td><strong style="font-size:.85rem;">${escapeHtml(s.reference)}</strong>${inactif ? ' <span class="badge bg-secondary">Inactive</span>' : ''}</td>
           <td>
             <div style="font-size:.85rem;">${escapeHtml(s.designation)}</div>
             ${s.conditionnement ? `<div style="font-size:.75rem;color:var(--text-3);">${escapeHtml(s.conditionnement)}</div>` : ''}
@@ -286,12 +299,7 @@
           <td class="text-center">${s.commande_en_cours ? '<span class="badge bg-info">Oui</span>' : '<span class="badge bg-secondary">Non</span>'}</td>
           <td class="text-center">
             <div class="btn-group btn-group-sm">
-              <a href="view.html?id=${s.id}" class="btn btn-outline-primary" title="Voir"><i class="fas fa-eye fa-sm"></i></a>
-              <a href="entry.html?id=${s.id}" class="btn btn-outline-success" title="Entrée"><i class="fas fa-arrow-circle-down fa-sm"></i></a>
-              <a href="exit.html?id=${s.id}" class="btn btn-outline-danger" title="Sortie"><i class="fas fa-arrow-circle-up fa-sm"></i></a>
-              <button class="btn btn-outline-warning" onclick="toggleOrder(${s.id}, ${s.commande_en_cours ? 'false' : 'true'})" title="${s.commande_en_cours ? 'Annuler commande' : 'Mettre en commande'}">
-                <i class="fas fa-truck fa-sm"></i>
-              </button>
+              <a href="view.html?id=${s.id}" class="btn btn-outline-primary" title="Voir"><i class="fas fa-eye fa-sm"></i></a>${mvtButtons}
             </div>
           </td>
         </tr>`;
@@ -328,6 +336,7 @@
   function clearFilters() {
     ['filterStockNormal','filterStockBas','filterRupture','filterCommande'].forEach(id => document.getElementById(id).checked = false);
     document.getElementById('searchInput').value = '';
+    document.getElementById('statutSelect').value = 'actifs';
     loadSupplies(1);
   }
 

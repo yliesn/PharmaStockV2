@@ -37,8 +37,8 @@ try {
 
     $inventaire_id = $db->lastInsertId();
 
-    // Récupérer tous les produits
-    $products = $db->query("SELECT id, reference, designation, quantite_stock FROM FOURNITURE ORDER BY reference");
+    // Récupérer les produits actifs (les inactifs ne sont plus inventoriés)
+    $products = $db->query("SELECT f.id, f.reference, f.designation, f.quantite_stock FROM FOURNITURE f WHERE f.actif = 1 ORDER BY " . SUPPLY_INVENTORY_ORDER);
     
     // Créer les lignes d'inventaire
     $insertStmt = $db->prepare("INSERT INTO INVENTAIRE_LIGNE 

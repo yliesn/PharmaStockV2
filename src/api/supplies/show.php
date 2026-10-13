@@ -30,7 +30,7 @@ $pdo = getDB();
 
 // Récupère la fourniture
 $stmt = $pdo->prepare('
-    SELECT id, reference, designation, conditionnement, quantite_stock, seuil_alerte, commande_en_cours
+    SELECT ' . SUPPLY_COLUMNS . '
     FROM FOURNITURE
     WHERE id = ?
     LIMIT 1
@@ -53,14 +53,7 @@ $stmt->execute([$supply_id]);
 $peremptions = $stmt->fetchAll();
 
 json_response([
-    'data' => [
-        'id'                => (int) $supply['id'],
-        'reference'         => $supply['reference'],
-        'designation'       => $supply['designation'],
-        'conditionnement'   => $supply['conditionnement'],
-        'quantite_stock'    => (int) $supply['quantite_stock'],
-        'seuil_alerte'      => $supply['seuil_alerte'] ? (int) $supply['seuil_alerte'] : null,
-        'commande_en_cours' => (bool) $supply['commande_en_cours'],
+    'data' => format_supply($supply) + [
         'peremptions'       => array_map(function($p) {
             return [
                 'id'               => (int) $p['id'],

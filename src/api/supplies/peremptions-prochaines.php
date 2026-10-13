@@ -35,8 +35,11 @@ $stmt = $pdo->prepare('
     JOIN FOURNITURE f ON p.fourniture_id = f.id
     WHERE
         p.actif = 1
-        AND p.date_peremption BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? MONTH)
-        OR p.date_peremption <CURDATE()
+        AND f.actif = 1
+        AND (
+            p.date_peremption BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? MONTH)
+            OR p.date_peremption < CURDATE()
+        )
     ORDER BY p.date_peremption ASC
 ');
 $stmt->execute([$mois]);

@@ -5,11 +5,12 @@ Application web de gestion de stock pour pharmacie : produits, entrées et sorti
 ## Fonctionnalités
 
 - **Tableau de bord** : ruptures, stocks bas, commandes en cours et péremptions des deux prochains mois.
-- **Produits** : liste paginée avec recherche, fiche détaillée, création, modification, suppression (admin).
+- **Produits** : liste paginée avec recherche, fiche détaillée, création, modification.
+- **Désactivation** : une fourniture inactive n'accepte plus de mouvement et n'entre plus dans les nouveaux inventaires. Rien n'est supprimé : son historique reste consultable et elle peut être réactivée.
 - **Mouvements** : entrées et sorties avec motif, historique filtrable par période, type et produit.
 - **Péremptions** : lots et dates de péremption par produit.
 - **Codes-barres** : génération et scan des codes produits.
-- **Inventaires** : saisie produit par produit des quantités comptées, calcul des écarts, validation qui corrige le stock. Voir [src/views/inventaires/README.md](src/views/inventaires/README.md).
+- **Inventaires** : saisie produit par produit des quantités comptées, calcul des écarts, validation qui corrige le stock. Les produits défilent selon l'« ordre d'inventaire » de leur fiche article. Ceux sans ordre passent en dernier, par référence. Voir [src/views/inventaires/README.md](src/views/inventaires/README.md).
 - **Utilisateurs** : création, modification, activation et désactivation des comptes par un administrateur. Il n'y a pas d'inscription libre.
 
 ## Stack technique
@@ -130,11 +131,11 @@ Toutes les routes, sauf `login.php`, exigent l'en-tête `Authorization: Bearer <
 
 | Méthode | Route | Description |
 |---|---|---|
-| GET | `/api/supplies/list.php` | Liste paginée. Query : `page`, `limit`, `search` |
+| GET | `/api/supplies/list.php` | Liste paginée. Query : `page`, `limit`, `search`, `statut` (`actifs` par défaut, `inactifs`, `tous`) |
 | GET | `/api/supplies/show.php?id=` | Détail d'un produit avec ses péremptions |
 | POST | `/api/supplies/create.php` | Création. La référence `PHxxx` est générée automatiquement |
-| PUT | `/api/supplies/update.php?id=` | Modification partielle |
-| DELETE | `/api/supplies/delete.php?id=` | Suppression (admin) |
+| PUT | `/api/supplies/update.php?id=` | Modification partielle, dont `actif` pour désactiver ou réactiver et `ordre` (entier ≥ 0 ou `null`) pour l'ordre d'inventaire |
+| DELETE | `/api/supplies/delete.php?id=` | Suppression définitive avec tout l'historique (admin). Non utilisée par l'interface : préférer la désactivation |
 | GET | `/api/supplies/mouvement.php?id=` | Derniers mouvements d'un produit et statistiques |
 | POST | `/api/supplies/mouvement.php?id=` | Nouveau mouvement. Corps : `type` (`ENTREE`/`SORTIE`), `quantite`, `motif`, `date_mouvement` |
 | GET | `/api/supplies/mouvements.php` | Historique global. Query : `page`, `limit`, `search`, `type`, `date_debut`, `date_fin` |
@@ -143,7 +144,7 @@ Toutes les routes, sauf `login.php`, exigent l'en-tête `Authorization: Bearer <
 
 Détails et exemples : [src/api/supplies/README.md](src/api/supplies/README.md).
 
-Une sortie supérieure au stock disponible est refusée. Un mouvement dont le motif contient « commande » et « reçu » clôt la commande en cours du produit.
+Un mouvement sur une fourniture inactive est refusé (409). Une sortie supérieure au stock disponible est refusée. Un mouvement dont le motif contient « commande » et « reçu » clôt la commande en cours du produit.
 
 ### Inventaires
 

@@ -42,11 +42,12 @@ try {
                 il.commentaire,
                 f.reference,
                 f.designation,
-                f.conditionnement
+                f.conditionnement,
+                f.ordre
               FROM INVENTAIRE_LIGNE il
               JOIN FOURNITURE f ON il.fourniture_id = f.id
               WHERE il.inventaire_id = ?
-              ORDER BY f.reference";
+              ORDER BY " . SUPPLY_INVENTORY_ORDER;
     
     $stmt = $db->prepare($query);
     $stmt->execute([$inventaire_id]);

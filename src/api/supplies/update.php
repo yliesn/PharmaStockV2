@@ -94,6 +94,26 @@ if (isset($body['commande_en_cours'])) {
     $params[] = $body['commande_en_cours'] ? 1 : 0;
 }
 
+// Ordre de passage à l'inventaire (entier >= 0, ou null / vide pour le retirer)
+if (array_key_exists('ordre', $body ?? [])) {
+    $ordre = $body['ordre'];
+    if ($ordre === null || $ordre === '') {
+        $ordre = null;
+    } elseif (filter_var($ordre, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]) === false) {
+        json_response(['error' => "L'ordre doit être un entier positif ou vide"], 400);
+    } else {
+        $ordre = (int) $ordre;
+    }
+    $updates[] = 'ordre = ?';
+    $params[] = $ordre;
+}
+
+// Actif / inactif (tout utilisateur connecté). Rien n'est supprimé : l'historique est conservé.
+if (array_key_exists('actif', $body ?? [])) {
+    $updates[] = 'actif = ?';
+    $params[] = $body['actif'] ? 1 : 0;
+}
+
 if (empty($updates)) {
     json_response(['error' => 'Aucun champ à mettre à jour'], 400);
 }
@@ -107,7 +127,7 @@ try {
 
     // Récupère la fourniture mise à jour
     $stmt = $pdo->prepare('
-        SELECT id, reference, designation, conditionnement, quantite_stock, seuil_alerte, commande_en_cours
+        SELECT ' . SUPPLY_COLUMNS . '
         FROM FOURNITURE
         WHERE id = ?
         LIMIT 1
@@ -117,15 +137,7 @@ try {
 
     json_response([
         'message' => 'Fourniture mise à jour avec succès',
-        'data' => [
-            'id'                => (int) $supply['id'],
-            'reference'         => $supply['reference'],
-            'designation'       => $supply['designation'],
-            'conditionnement'   => $supply['conditionnement'],
-            'quantite_stock'    => (int) $supply['quantite_stock'],
-            'seuil_alerte'      => $supply['seuil_alerte'] ? (int) $supply['seuil_alerte'] : null,
-            'commande_en_cours' => (bool) $supply['commande_en_cours'],
-        ],
+        'data' => format_supply($supply),
     ], 200);
 } catch (PDOException $e) {
     json_response(['error' => 'Erreur lors de la mise à jour de la fourniture'], 500);

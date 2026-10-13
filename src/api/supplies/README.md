@@ -19,6 +19,7 @@ Authorization: Bearer YOUR_JWT_TOKEN
 - `page` (int): Numéro de page (défaut: 1)
 - `limit` (int): Nombre de résultats par page (défaut: 20, max: 100)
 - `search` (string): Rechercher par référence ou désignation
+- `statut` (string): `actifs` (défaut), `inactifs` ou `tous`
 
 **Réponse (200):**
 ```json

@@ -54,8 +54,9 @@ try {
     }
 
     // Récupérer les lignes de l'inventaire
-    $query = "SELECT il.id, il.fourniture_id, il.quantite_theorique, il.quantite_physique, il.ecart
+    $query = "SELECT il.id, il.fourniture_id, il.quantite_theorique, il.quantite_physique, il.ecart, f.actif
               FROM INVENTAIRE_LIGNE il
+              JOIN FOURNITURE f ON f.id = il.fourniture_id
               WHERE il.inventaire_id = ?";
     
     $stmt = $db->prepare($query);
@@ -70,11 +71,18 @@ try {
     ");
 
     // Parcours des lignes
+    $ignorees_inactives = 0;
     foreach ($lines as $line) {
 
         $ecart = (int)$line['ecart'];
 
         if ($ecart === 0) {
+            continue;
+        }
+
+        // Fourniture désactivée pendant l'inventaire : aucun mouvement de correction
+        if (!(int)$line['actif']) {
+            $ignorees_inactives++;
             continue;
         }
 
@@ -113,6 +121,7 @@ try {
     $statsStmt = $db->prepare($statsQuery);
     $statsStmt->execute([$inventaire_id]);
     $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
+    $stats['ignorees_inactives'] = $ignorees_inactives;
 
     $db->commit();
 

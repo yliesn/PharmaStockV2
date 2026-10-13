@@ -120,9 +120,13 @@ if ($quantite <= 0) {
 }
 
 // Récupère la fourniture
-$stmt = $pdo->prepare('SELECT quantite_stock FROM FOURNITURE WHERE id = ? LIMIT 1');
+$stmt = $pdo->prepare('SELECT quantite_stock, actif FROM FOURNITURE WHERE id = ? LIMIT 1');
 $stmt->execute([$supply_id]);
 $supply = $stmt->fetch();
+
+if (!(int)$supply['actif']) {
+    json_response(['error' => 'Fourniture inactive : aucun mouvement possible'], 409);
+}
 
 // Vérifie qu'on ne peut pas faire une sortie si pas assez de stock
 if ($type === 'SORTIE' && $supply['quantite_stock'] < $quantite) {

@@ -53,7 +53,9 @@ CREATE TABLE `FOURNITURE` (
   `conditionnement` varchar(255) DEFAULT NULL,
   `quantite_stock` int(11) NOT NULL DEFAULT 0,
   `seuil_alerte` int(11) DEFAULT NULL,
-  `commande_en_cours` tinyint(1) NOT NULL DEFAULT 0
+  `commande_en_cours` tinyint(1) NOT NULL DEFAULT 0,
+  `actif` tinyint(1) NOT NULL DEFAULT 1,
+  `ordre` int(11) DEFAULT NULL COMMENT 'Ordre de passage à l''inventaire (NULL = en fin, par référence)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --

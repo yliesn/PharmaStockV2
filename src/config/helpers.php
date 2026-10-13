@@ -37,3 +37,24 @@ function validate_role(string $role): void {
         json_response(['error' => 'Rôle invalide. Rôles autorisés : ' . implode(', ', ALLOWED_ROLES)], 400);
     }
 }
+
+/** Colonnes de FOURNITURE renvoyées par l'API (à utiliser avec format_supply). */
+const SUPPLY_COLUMNS = 'id, reference, designation, conditionnement, quantite_stock, seuil_alerte, commande_en_cours, actif, ordre';
+
+/** Tri des fournitures pour l'inventaire : ordre défini d'abord, puis les autres par référence. */
+const SUPPLY_INVENTORY_ORDER = 'f.ordre IS NULL, f.ordre ASC, f.reference ASC';
+
+/** Formate une ligne FOURNITURE pour la réponse JSON. */
+function format_supply(array $s): array {
+    return [
+        'id'                => (int) $s['id'],
+        'reference'         => $s['reference'],
+        'designation'       => $s['designation'],
+        'conditionnement'   => $s['conditionnement'],
+        'quantite_stock'    => (int) $s['quantite_stock'],
+        'seuil_alerte'      => $s['seuil_alerte'] !== null ? (int) $s['seuil_alerte'] : null,
+        'commande_en_cours' => (bool) $s['commande_en_cours'],
+        'actif'             => (bool) $s['actif'],
+        'ordre'             => $s['ordre'] !== null ? (int) $s['ordre'] : null,
+    ];
+}

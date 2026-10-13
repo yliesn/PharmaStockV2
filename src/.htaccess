@@ -1,0 +1,14 @@
+# Cache navigateur
+# Sans en-tête Cache-Control, les navigateurs gardent HTML/JS/CSS en cache
+# selon une durée heuristique et ne voient pas les nouvelles versions.
+# "no-cache" ne désactive pas le cache : le navigateur garde le fichier mais
+# demande au serveur s'il a changé (ETag). Réponse 304 très légère si rien n'a bougé.
+# Nécessite mod_headers (activé dans le Dockerfile).
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|js|css|json|webmanifest)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(png|jpe?g|gif|svg|ico|woff2?)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+</IfModule>

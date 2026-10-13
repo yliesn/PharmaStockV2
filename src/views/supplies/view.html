@@ -60,11 +60,16 @@
         <a href="exit.html?id=" id="exitBtn" class="btn btn-sm btn-danger">
           <i class="fas fa-arrow-up me-1"></i>Sortie
         </a>
+        <button type="button" id="toggleActifBtn" class="btn btn-sm btn-outline-secondary" onclick="toggleActif()" hidden></button>
       </div>
     </div>
     <div class="content">
 
       <div id="alert" class="alert alert-danger d-none mb-3"></div>
+      <div id="inactiveBanner" class="alert alert-secondary mb-3" hidden>
+        <i class="fas fa-ban me-1"></i>
+        Cette fourniture est <strong>inactive</strong> : aucun mouvement n'est possible et elle n'apparaît plus dans les nouveaux inventaires. Son historique est conservé.
+      </div>
 
       <!-- En-tête produit -->
       <div class="d-flex align-items-center gap-3 mb-4">
@@ -115,6 +120,14 @@
               <div class="info-group">
                 <div class="info-label">Conditionnement</div>
                 <div class="info-value" id="infoCond">—</div>
+              </div>
+              <div class="info-group">
+                <div class="info-label">Ordre d'inventaire</div>
+                <form class="d-flex gap-2 align-items-center" id="ordreForm" style="max-width:260px;">
+                  <input type="number" min="0" step="1" class="form-control form-control-sm" id="ordreInput" placeholder="Non défini">
+                  <button type="submit" class="btn btn-sm btn-outline-primary" id="ordreSaveBtn">Enregistrer</button>
+                </form>
+                <div class="form-text" style="font-size:.72rem;">Position de passage pendant l'inventaire. Vide : en fin de liste, par référence.</div>
               </div>
               <div class="info-group">
                 <div class="info-label">Statut</div>
@@ -293,10 +306,20 @@
 
     document.getElementById('entryBtn').href = `entry.html?id=${d.id}`;
     document.getElementById('exitBtn').href  = `exit.html?id=${d.id}`;
+    document.getElementById('entryBtn').hidden = !d.actif;
+    document.getElementById('exitBtn').hidden  = !d.actif;
+    document.getElementById('inactiveBanner').hidden = d.actif;
+
+    const toggleBtn = document.getElementById('toggleActifBtn');
+    toggleBtn.hidden = false;
+    toggleBtn.innerHTML = d.actif
+      ? '<i class="fas fa-ban me-1"></i>Désactiver'
+      : '<i class="fas fa-check me-1"></i>Réactiver';
 
     document.getElementById('infoRef').textContent    = escapeHtml(d.reference);
     document.getElementById('infoDesign').textContent = escapeHtml(d.designation);
     document.getElementById('infoCond').textContent   = d.conditionnement ? escapeHtml(d.conditionnement) : '—';
+    document.getElementById('ordreInput').value       = d.ordre ?? '';
     document.getElementById('infoStock').textContent  = d.quantite_stock;
     document.getElementById('infoAlerte').textContent = d.seuil_alerte || '—';
 
@@ -312,9 +335,58 @@
     } else {
       statusBadge = 'success'; statusText = 'Normal';
     }
-    document.getElementById('infoStatus').innerHTML = `<span class="badge bg-${statusBadge}">${statusText}</span>`;
+    document.getElementById('infoStatus').innerHTML = `<span class="badge bg-${statusBadge}">${statusText}</span>`
+      + (d.actif ? '' : ' <span class="badge bg-dark">Inactive</span>');
 
     generateBarcode(d.reference);
+  }
+
+  document.getElementById('ordreForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const raw = document.getElementById('ordreInput').value.trim();
+    if (raw !== '' && !/^\d+$/.test(raw)) { notify.error('Erreur', "L'ordre doit être un entier positif"); return; }
+    const btn = document.getElementById('ordreSaveBtn');
+    btn.disabled = true;
+    try {
+      const url = new URL(`${API}/supplies/update.php`, window.location.origin);
+      url.searchParams.append('id', supplyId);
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('jwt') },
+        body: JSON.stringify({ ordre: raw === '' ? null : parseInt(raw, 10) }),
+      });
+      const result = await res.json();
+      if (!res.ok) { notify.error('Erreur', result.error || 'Mise à jour impossible'); return; }
+      supplyData.ordre = result.data.ordre;
+      notify.success('Succès', raw === '' ? "Ordre d'inventaire retiré" : `Ordre d'inventaire : ${result.data.ordre}`);
+    } catch (err) {
+      notify.error('Erreur', 'Impossible de contacter le serveur');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  async function toggleActif() {
+    const activer = !supplyData.actif;
+    const question = activer
+      ? 'Réactiver cette fourniture ? Elle pourra de nouveau recevoir des mouvements et sera incluse dans les prochains inventaires.'
+      : 'Désactiver cette fourniture ? Plus aucun mouvement ne sera possible et elle sera exclue des prochains inventaires. L\'historique est conservé.';
+    if (!confirm(question)) return;
+    try {
+      const url = new URL(`${API}/supplies/update.php`, window.location.origin);
+      url.searchParams.append('id', supplyId);
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('jwt') },
+        body: JSON.stringify({ actif: activer }),
+      });
+      const result = await res.json();
+      if (!res.ok) { notify.error('Erreur', result.error || 'Mise à jour impossible'); return; }
+      notify.success('Succès', activer ? 'Fourniture réactivée' : 'Fourniture désactivée');
+      loadSupplyDetails();
+    } catch (e) {
+      notify.error('Erreur', 'Impossible de contacter le serveur');
+    }
   }
 
   function generateBarcode(reference) {

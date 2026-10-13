@@ -221,6 +221,9 @@
       if (!res.ok) throw new Error('Impossible de charger les détails');
       const data = await res.json();
       currentSupply = data.data;
+      const submitBtn = document.querySelector('#formContainer button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = !currentSupply.actif;
+      if (!currentSupply.actif) notify.error('Fourniture inactive', 'Aucun mouvement possible sur cette fourniture.');
       document.getElementById('supplyName').textContent  = currentSupply.designation    || 'N/A';
       document.getElementById('supplyRef').textContent   = currentSupply.reference      || 'N/A';
       document.getElementById('supplyStock').textContent = currentSupply.quantite_stock || '0';
